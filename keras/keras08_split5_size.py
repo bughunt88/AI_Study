@@ -49,16 +49,31 @@ print(y_test.shape)
 # train_size + test_size = 0 ~ 1 사이에 값이 나와야 한다
 
 # 0.9 인 경우 
+# 데이터가 100개에서 train_size : 0.7 와 test_size : 0.2 로 구해보면 
+# train_size의 값은 70개가 나온다 test_size의 값은 20개 나온다
+# 100개의 데이터로 나눴지만 70+20개 총 90개 
+# 10개의 데이터 손실이 나왔다
 
 
+# 스칼라 : 하나의 숫자를 의미 ( 0차원 )
+# ex) 10 
+# 백터 : 스칼라의 배열 ( 1차원 )
+# ex) [10], [10,], [10,20,30]
+# 행렬 : 2차원의 배열 ( 2차원 )
+# ex) [[10,20,30],[1,2,3,4]]
+# 텐서 : 2차원 이상의 배열 ( 다차원 )
+# ex) [  [ [10,20] , [1,2,3] ],[ [4,5,6] , [7,8,9] ]  ]
 
 
+# 배치 사이즈에 대하여 정리 
+# 모델의 가중치를 한번 업데이트시킬 때 사용되는 샘플들의 묶음을 의미합니다.
+# 만약에 총 1000개의 훈련 샘플이 있는데, 배치 사이즈가 20이라면 20개의 샘플 단위마다 모델의 가중치를 한번씩 업데이트시킵니다. 총 50번(=1000/20) 가중치가 업데이트 됨
 
 
 
 '''
 
-x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, train_size=0.8, shuffle=False)
+x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, shuffle=False)
 
 print(x_train.shape)
 print(x_val.shape)
