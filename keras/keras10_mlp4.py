@@ -6,6 +6,8 @@
 # predict의 일부값을 출력하시오.
 # 임의의 값을 넣어주고 확인하라 
 
+# 다:1 mlp
+
 
 import numpy as np
 

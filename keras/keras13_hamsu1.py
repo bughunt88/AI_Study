@@ -1,7 +1,7 @@
 # Sequential 모델이 아닌 함수형 모델 만드는 법 
 
-
 import numpy as np
+
 
 # 1. 데이터 
 
@@ -11,7 +11,6 @@ y = np.array([range(711,811), range(1,101)])
 
 print(x.shape) # (5,100)
 print(y.shape) # (2,100)
-
 
 # 위에 (2,10)을 (10,2)로 변경해주는 함수
 # x = x.reshape((10, 2)) 
@@ -33,8 +32,7 @@ print(y_train.shape) # (80,2)
 
 # 2. 모델구성
 
-# ****************************
-
+# **************************** 중요
 from tensorflow.keras.models import Sequential, Model
 # Model은 함수형 모델이다 
 from tensorflow.keras.layers import Dense, Input
@@ -54,7 +52,6 @@ model = Model(inputs = input1, outputs = outputs)
 model.summary()
 # 무슨 모델인지 알고 싶으면  .summary() 을 사용
 
-
 # 위에 모델 구성과, 아래 모델 구성이 같다. 대신 모델 방식이 다르
 
 '''
@@ -69,6 +66,7 @@ model.summary()
 '''
 
 # 3. 컴파일 훈련
+
 model.compile(loss='mse', optimizer='adam', metrics='mae')
 model.fit(x_train,y_train, epochs=100, batch_size=1, validation_split=0.2, verbose=0)
 
@@ -80,7 +78,6 @@ y_predict = model.predict(x_test)
 # *** y_prdict 이랑 y_test 의 shape를 맞춰야 한다 ***
 
 
-
 # 사이킷런
 from sklearn.metrics import mean_squared_error
 
@@ -89,15 +86,12 @@ def RMSE(y_test, y_predict):
     # mean_squared_error는 sklearn에서 mse 만드는 함수 
     # sqrt는 넘파이에 루트 씌우는 함수
 
-
 print(y_test)
 print(y_predict)
-
 
 print("RMSE : ", RMSE(y_test, y_predict))
 # print("mse : ", mean_squared_error(y_test, y_predict))
 print("mse : ", mean_squared_error(y_predict, y_test))
-
 
 
 # R2 만드는 법
@@ -105,3 +99,5 @@ from sklearn.metrics import r2_score
 
 r2 = r2_score(y_test, y_predict)
 print("R2 : ", r2)
+
+

@@ -3,6 +3,8 @@
 
 # 행렬의 구조를 변경시켜주는 함수 - np.transpose(행렬)
 
+# 다:1 mlp
+
 import numpy as np
 
 # 1. 데이터 

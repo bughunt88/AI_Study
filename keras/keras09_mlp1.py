@@ -1,5 +1,6 @@
 # 행렬이 2차원 일 때 input_dim 에 넣는 값도 달라진다 (컬럼의 수로 결정한다)
 
+# 다:1 mlp
 
 import numpy as np
 
