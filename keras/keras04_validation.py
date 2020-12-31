@@ -70,3 +70,12 @@ result = model.predict(x_train)
 
 print("result : ", result)
 
+
+
+# 제대로 전처리 (validateion_split)
+# loss :  10.961244583129883
+# mae :  2.407649278640747
+# RMSE :  3.3107768583643407
+# R2 :  0.8673247641902566
+
+

@@ -55,6 +55,7 @@ from tensorflow.keras.layers import concatenate, Concatenate
 # from keras.layers from concatenate, Concatenate
 
 
+# *************
 
 merge1 = concatenate([dense1, dense2])
 # 모델 1과 모델 2를 엮는 코드
