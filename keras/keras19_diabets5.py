@@ -61,7 +61,7 @@ from tensorflow.keras.layers import Dense, Input
 
 
 model = Sequential()
-model.add(Dense(128, activation='relu' ,input_dim= 13)) 
+model.add(Dense(128, activation='relu' ,input_dim= 10)) 
 
 # model.add(Dense(128, activation='relu' ,input_shape= (13,))) 
 

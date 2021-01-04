@@ -13,7 +13,7 @@ print(x[:5])
 print(y[:10])
 
 print(x.shape, y.shape)
-print(np.max(x), np.min(y))
+print(np.max(x), np.min(x))
 
 print(dataset.feature_names)
 # 컬럼 이름 불러오는 코드
@@ -27,7 +27,7 @@ x = x/0.198787989657293
 
 from sklearn.model_selection import train_test_split
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8) # shuffle False면 섞는다
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8, shuffle = True) # shuffle False면 섞는다
 
 
 # 2. 모델구성

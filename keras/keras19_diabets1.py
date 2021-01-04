@@ -25,7 +25,7 @@ print(dataset.feature_names)
 
 from sklearn.model_selection import train_test_split
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8, shuffle = True) # shuffle False면 섞는다
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8) # shuffle False면 섞는다
 
 
 # 2. 모델구성
@@ -37,18 +37,13 @@ from tensorflow.keras.layers import Dense, Input
 # Input 레이어가 존재한다
 
 
-model = Sequential()
-model.add(Dense(128, activation='relu' ,input_dim= 10)) 
-
-# model.add(Dense(128, activation='relu' ,input_shape= (13,))) 
-
-model.add(Dense(128))
-model.add(Dense(128))
-model.add(Dense(128))
-model.add(Dense(128))
-
-model.add(Dense(1))   # 아웃풋 결과가 달라지면 여기도 수정해야한다 
-
+model=Sequential()
+model.add(Dense(128, activation='relu', input_shape=(10,)))
+model.add(Dense(256, activation='relu'))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1))
 
 
 # 3. 컴파일 훈련
