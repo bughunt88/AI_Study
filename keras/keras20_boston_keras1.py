@@ -8,10 +8,6 @@ from tensorflow.keras.datasets import boston_housing
 # 텐서 플로우 방식이라 사용법이 다르다 찾아서 하라
 
 
-
-# EarlyStopping
-
-
 import numpy as np
 
 
