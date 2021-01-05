@@ -49,6 +49,12 @@ x_test = scaler.transform(x_test)
 x_val = scaler.transform(x_val)
 
 
+print(x_test.shape)
+
+
+
+
+
 
 
 # 2. 모델구성

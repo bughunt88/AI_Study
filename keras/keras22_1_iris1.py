@@ -1,6 +1,9 @@
 
 # 다중 분류 !!!!
 
+# 아웃풋 레이어 activation = 'softmax' -> 노드의 수는 결과 값의 컬럼의 수 
+# 컴파일 loss='categorical_crossentropy'
+# 컴파일 metrics=['accuracy']
 
 import numpy as np
 from sklearn.datasets import load_iris
@@ -33,10 +36,7 @@ print(y)
 from sklearn.model_selection import train_test_split
 
 x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, random_state = 66 ) 
-
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  test_size=0.3,  random_state = 66 ) 
-
-
 
 
 # x 에 대한 전처리는 무조건이지만 y 에 대한 인코딩은 다중 분류에서 한다
@@ -87,7 +87,6 @@ model.add(Dense(13))
 model.add(Dense(13))
 model.add(Dense(3, activation='softmax'))
 # softmax 는  위에서 원 핫 인코딩을 해야한다 그러면 아웃풋 쉐이프는 변경되어야 한다 
-
 
 
 
