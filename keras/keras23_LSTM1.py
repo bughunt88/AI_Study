@@ -51,7 +51,7 @@ model.summary()
 
 # activation == tanh (디폴트)
 
-# ( input_dim + binary + output) * output
+# ( input_dim + binary + output) * 4 * output
 # ( 1 + 1 + 10 ) * 4 * 10 = 480
 # 4개의 gate가 있다 ( 4를 곱해야함 )
 

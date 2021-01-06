@@ -25,12 +25,6 @@ from tensorflow.keras.layers import Dense,GRU
 
 model = Sequential()
 
-# nums = 3 * [ dh * (dh + dx) + dh ]
-
-# ((1+10)*10 + 10 + 10) * 3 * 2
-
-print(((10+1)*1 + 1 + 1) * 3 * 2)
-
 model.add(GRU(10, activation='relu', input_shape=(3,1))) # 3차원
 # 순차적으로 계산해야하기 떄문에 input_shape가 회기랑 다르다 
 
@@ -40,48 +34,60 @@ model.add(Dense(1))
 
 model.summary()
 
+# ( input_dim + binary + output) * 4 * output
+# ( 1 + 1 + 10 ) * 4 * 10 = 480
 
-# # [batch, timesteps, feature]
-# # [batch, timesteps, input_dim]
+print(3*10*(10+1+1+1))
 
-# # activation == tanh (디폴트)
-
-# # ( input_dim + binary + output) * output
-# # gate가 없다 
-
-
-# '''
+# [batch, timesteps, feature]
+# [batch, timesteps, input_dim]
+# activation == tanh (디폴트)
 
 
-# # 3. 컴파일, 훈련
 
-# model.compile(loss='mse', optimizer='adam')
-# model.fit(x,y,epochs=100, batch_size=1)
+# [batch, timesteps, feature]
+# [batch, timesteps, input_dim]
 
+# activation == tanh (디폴트)
 
-# # 4. 평가, 예측
-# loss = model.evaluate(x,y)
-# print(loss)
-
-
-# x_pred = np.array([5,6,7]) #(3,) -> (1,3,1)
-# x_pred = x_pred.reshape(1,3,1)
-# # lstm에 쓸 수 있는 데이터 구조로 변경 (reshape)
-
-# result = model.predict(x_pred)
-# print(result)
-
-# '''
-
-# # keras23_LSTM1 결과
-# # 0.0299268439412117
-# # [[8.190641]]
+# ( input_dim + binary + output) * 3 * output
+# ( 1 + 1 + 1 + 10 ) * 3 * 10 = 480
+# 3개의 gate가 있다 
 
 
-# # keras24_SimpleRNN1 결과
-# # 6.830882921349257e-05
-# # [[8.038282]]
 
-# # keras25_GRU1 결과
-# # 0.002202202333137393
-# # [[7.89276]]
+'''
+
+
+# 3. 컴파일, 훈련
+
+model.compile(loss='mse', optimizer='adam')
+model.fit(x,y,epochs=100, batch_size=1)
+
+
+# 4. 평가, 예측
+loss = model.evaluate(x,y)
+print(loss)
+
+
+x_pred = np.array([5,6,7]) #(3,) -> (1,3,1)
+x_pred = x_pred.reshape(1,3,1)
+# lstm에 쓸 수 있는 데이터 구조로 변경 (reshape)
+
+result = model.predict(x_pred)
+print(result)
+
+'''
+
+# keras23_LSTM1 결과
+# 0.0299268439412117
+# [[8.190641]]
+
+
+# keras24_SimpleRNN1 결과
+# 6.830882921349257e-05
+# [[8.038282]]
+
+# keras25_GRU1 결과
+# 0.002202202333137393
+# [[7.89276]]

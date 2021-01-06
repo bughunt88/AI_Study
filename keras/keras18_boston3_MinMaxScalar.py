@@ -33,8 +33,6 @@ print(dataset.feature_names)
 # (x - np.min(x)) / (np.max(x) - np.min(x))
 
 
-
-
 from sklearn.preprocessing import MinMaxScaler
 
 scaler = MinMaxScaler()
