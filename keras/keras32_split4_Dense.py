@@ -28,7 +28,7 @@ a = np.array(range(1,101))
 
 b = np.array(range(96,105))
 
-size = 6
+size = 10
 
 
 def split_x(seq, size):
@@ -53,9 +53,8 @@ y = dataset[   : ,   size-1]
 
 from sklearn.model_selection import train_test_split
 
-x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, random_state = 66 ) # shuffle False면 섞는다
-x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  test_size=0.3, random_state = 66 ) # shuffle False면 섞는다
-
+x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, random_state = 66 )
+x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  test_size=0.3, random_state = 66 )
 
 from sklearn.preprocessing import MinMaxScaler
 
@@ -74,7 +73,7 @@ from tensorflow.keras.layers import Dense, Input, LSTM
 
 # 2. 모델 구성 
 
-input1 = Input(shape=(5,))
+input1 = Input(shape=(size-1,))
 dense1 = Dense(10, activation='relu')(input1)
 dense1 = Dense(50, activation='relu')(dense1) 
 dense1 = Dense(25)(dense1) 

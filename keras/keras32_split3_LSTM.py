@@ -20,6 +20,8 @@ import numpy as np
 
 
 
+# 1. 데이터 
+
 a = np.array(range(1,101))
 
 b = np.array(range(96,105))
@@ -39,16 +41,13 @@ dataset = split_x(a,size)
 
 x_predict = split_x(b,size-1)
 
+
 # 행열 슬라이싱 
 # ( 행 , 열 ) 
 x = dataset[   : ,  :size-1]
 y = dataset[   : ,   size-1]
 
 # 슬라이싱 
-
-
-
-
 
 from sklearn.model_selection import train_test_split
 
@@ -67,7 +66,7 @@ x_predict = scaler.transform(x_predict)
 
 
 x = x.reshape(x.shape[0],x.shape[1],1) # 3차원 
-x_predict = x_predict.reshape(x_predict.shape[0],x_predict.shape[0],1) # 3차원 
+x_predict = x_predict.reshape(len(b) - size + 2,x_predict.shape[1],1) # 3차원 
 
 
 
@@ -103,7 +102,7 @@ model.compile(loss='mse', optimizer='adam')
 from tensorflow.keras.callbacks import EarlyStopping
 eraly_stopping = EarlyStopping(monitor='loss', patience=10, mode='auto')
 
-model.fit(x_train, y_train, epochs=1000, batch_size=16, validation_data=(x_val,y_val), callbacks=[eraly_stopping])
+model.fit(x_train, y_train, epochs=100, batch_size=16, validation_data=(x_val,y_val), callbacks=[eraly_stopping])
 
 
 # 4. 평가, 예측
