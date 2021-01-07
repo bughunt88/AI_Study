@@ -15,7 +15,7 @@ print(x.shape) # (4,3)
 print(y.shape) # (4,)
 
  
-x = x.reshape(4,3,1) # 3차원 
+x = x.reshape(4,3,1) # 3차원   
 # 순환 하려면 reshape 해줘야 한다 (LSTM 레이어에 넣기 위해서)
 
 # 2.모델구성

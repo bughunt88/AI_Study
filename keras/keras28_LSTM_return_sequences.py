@@ -29,7 +29,7 @@ print(y.shape) # (13,)
 x = x.reshape(x.shape[0], x.shape[1], 1)
 
 # 2.모델구성
-
+ 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense,LSTM
 

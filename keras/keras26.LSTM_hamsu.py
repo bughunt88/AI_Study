@@ -33,7 +33,7 @@ dense1 = LSTM(10, activation='relu')(input1)
 # 위에서 지정한 변수 명을 아래에 써줘야 한다
 dense1 = Dense(50, activation='relu')(dense1) 
 dense1 = Dense(50, activation='relu')(dense1) 
-dense1 = Dense(50, activation='relu')(dense1) 
+dense1 = Dense(50, activation='relu')(dense1)   
 dense1 = Dense(50, activation='relu')(dense1) 
 dense1 = Dense(50, activation='relu')(dense1) 
 dense1 = Dense(25)(dense1) 

@@ -79,7 +79,7 @@ print(loss)
 x1_predict = x1_predict.reshape(1, 3, 1)
 x2_predict = x2_predict.reshape(1, 3)
 
-
+ 
 y_predict = model.predict([x1_predict, x2_predict])
 
 print(y_predict)

@@ -68,7 +68,7 @@ model = Model(inputs = input1, outputs = outputs)
 model.compile(loss='mse', optimizer='adam')
 model.fit(x,y,epochs=200, batch_size=1)
 
-
+ 
 # 4. 평가, 예측
 
 loss = model.evaluate(x,y)

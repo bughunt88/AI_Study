@@ -17,7 +17,7 @@
 
 # LSTM 과 결과 비교!!!
 
-
+ 
 
 
 import numpy as np

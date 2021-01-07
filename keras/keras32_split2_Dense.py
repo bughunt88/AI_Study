@@ -8,6 +8,7 @@ a = np.array(range(1,11))
 size = 5
 
 
+
 def split_x(seq, size):
 
     aaa = []

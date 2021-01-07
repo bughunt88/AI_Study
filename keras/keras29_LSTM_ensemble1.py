@@ -42,7 +42,7 @@ dense2 = Dense(50)(dense2)
 dense2 = Dense(50)(dense2)
 dense2 = Dense(50)(dense2)
 dense2 = Dense(50)(dense2)
-
+ 
 
 # 모델 병합 / concatenate
 from tensorflow.keras.layers import concatenate, Concatenate

@@ -14,7 +14,7 @@ y2 = array([4,5,6,7,8,9,10,11,12,13,50,60,70])
 
 x1_predict = array([55,65])
 x2_predict = array([65,75,85])
-
+ 
 
 # ****** 중요 **********
 # reshape 해주면 x_predict의 값도 reshape 해줘야 한다!!!!
