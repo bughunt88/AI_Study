@@ -1,0 +1,71 @@
+* 머신러닝 정리
+
+
+대분류 
+
+DNN
+RNN
+CNN
+
+
+1.DNN ( 사용 하는 곳 : 회기형 데이터, 이중 분류 데이터, 다중 분류 데이터 )
+
+- 회기형 데이터 ( 일반적인 레이어 Dense )
+    * 회기 모델은 그래프의 선을 그어 처리한다
+    * 지표 RMSE, R2를 구해서 올바른 모델인지 확인해야 한다
+- 이중 분류 데이터 ( activation='sigmoid’ , loss='binary_crossentropy’ , metrics=['accuracy'] )
+- 다중 분류 데이터 ( activation='softmax' , loss='categorical_crossentropy' , metrics=['accuracy'] )
+    * sklearn : OneHotEncoder, keras : to_categorical 사용해서 y 값을 분류해줘야 한다 ( 다중 분류 데이터의 y는 정해진 값들이기 때문에 위치 형식으로 저장한다 )
+    * 아웃풋 레이어에 y값의 shape랑 맞춰야 한다
+- 이중 분류, 다중 분류 y 데이터 확인 : y_predict.argmax(axis=1)
+- ensemble 사용 가능 ( 서로 다른 모델을 하나로 합쳐서 계산 하게 해주는 기능 )
+
+2.RNN ( 사용 하는 곳 : 시계열 데이터 )
+
+- 순환 모델은 데이터의 앞에 값을 계산 후 뒤에 값을 계산한다
+- LSTM( 많이 쓰임 ), GRU, SimpleRNN 종류가 있다
+- input_shape는 3차원으로 넣어줘야 한다
+- ensemble 사용 가능 ( 대신 행을 무조건 맞춰줘야 한다 )
+   * RNN 레이어를 더 쓰고 싶으면 return_sequences=True 를 써줘야 한다 ( 기본적인 RNN 레이어는 3차원을 받아서 2차원으로 내보내 주지만 코드를 사용하면 3차원 -> 3차원으로 보내준다 )
+
+3.CNN ( 사용 하는 곳 : 이미지 데이터 )
+
+- Conv2D 레이어를 사용
+   * model.add(Conv2D(filters=10,  kernel_size=(2,2),                input_shape=(10,10,1)), padding='same', strides=1 )
+                                         노드의 수, 원하는 사이즈로 자른다 ,  받아오는 이미지의 사이즈 (가로,세로,색) #색 1은 흑백, 3은 컬러
+- MaxPooling2D : 폴링에서 지정한 범위만큼에서 가장 특색있는 부분만 뽑아서 저장한다 ( 간소화 )
+- Flatten() : Dense 레이어와 엮으려면 사용해야한다
+
+
+
+
+
+
+* 공통 기능
+
+
+
+1.데이터 전처리 ( 필수 !!! ) : 성능이 향상된다
+
+- train_test_split : 데이터 x, y 값을 원하는 사이즈 만큼 나누어 준다 기본적으로 shuffle 해줌
+- MinMaxScaler : x 데이터의 값을 0~1의 사이값으로 재조정 해준다 
+
+
+2.EarlyStopping : loss 값이 최저, 최고를 찍고 난 뒤 설정 한 값( patience ) 이 지난 다음 작동을 멈추게 해준다
+
+- fit에 적용 시킨다 
+
+
+3.모델 저장 / 불러오기
+
+- model.save(‘ 경로 ‘ ) : 모델을 저장한다
+- model = load_model(' 경로 ') : 모델을 불러온다, 케라스에서 임포트 시켜야 한다, 저장 한 모델 불러온 뒤 추가로 레이어를 쓰려면 name 값을 넣어줘야 한다
+
+
+4.hist : loss나 metrics를 그래프로 보여준다
+
+- fit에 적용 시킨 후 사용한다
+
+5.Dropout : 위에 레이어에서 지정한 노드수의 일정 부분을 빼고 계산한다
+
+- model.add(Dropout(0.2)) 처럼 사용 (위에 일반적인 레이어가 있어야 한다, 아웃풋 레이어에는 사용 불가!)

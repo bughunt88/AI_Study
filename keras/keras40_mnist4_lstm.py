@@ -20,7 +20,7 @@ from tensorflow.keras.datasets import mnist
 
 n = 28
 
-x_shape_val = int(x_train.shape[1]*(x_train.shape[2]/n)) # 28/n
+x_shape_val = int(x_train.shape[1]*(x_train.shape[2]/n)) # 28/nA
 
 print(x_shape_val)
 
@@ -93,7 +93,7 @@ print('y_predict_argmax : ', y_predict.argmax(axis=1))
 # y_predict_argmax :  [7 2 1 0 4 1 4 9 5 9]
 
 # RSTN
-# 0.10344378650188446
-# 0.9757000207901001
+#0.11151368170976639
+# 0.9812999963760376
 # y_test :  [7 2 1 0 4 1 4 9 5 9]
 # y_predict_argmax :  [7 2 1 0 4 1 4 9 5 9]
