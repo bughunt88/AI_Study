@@ -25,7 +25,7 @@ x = x.reshape(x.shape[0], x.shape[1], 1)
 print(x.shape)              #(96, 4, 1)
 
 #2. 모델
-model = load_model('./model/save_keras35.h5')
+model = load_model('../data/h5/save_keras35.h5')
 model.add(Dense(5, name = 'new1'))
 model.add(Dense(1, name = 'new2'))
 

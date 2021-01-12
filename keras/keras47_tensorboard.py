@@ -47,13 +47,15 @@ model.add(Dense(10, activation='softmax')) #y값 3개이다(0,1,2)
 
 #3. 컴파일, 훈련
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
-modelpath = './modelCheckpoint/k45_mnist_{epoch:02d}-{val_loss:.4f}.hdf5'
+modelpath = '../data/modelcheckpoint/k45_mnist_{epoch:02d}-{val_loss:.4f}.hdf5'
 
 es= EarlyStopping(monitor='val_loss', patience=5)
 cp =ModelCheckpoint(filepath='modelpath', monitor='val_loss',
                     save_best_only=True, mode='auto')
-tb=TensorBoard(log_dir='./graph', histogram_freq=0, 
+
+tb=TensorBoard(log_dir='../data/graph', histogram_freq=0, 
                write_graph=True, write_images=True)
+               
 model.compile(loss='categorical_crossentropy',
               optimizer='adam', metrics=['acc'])
 

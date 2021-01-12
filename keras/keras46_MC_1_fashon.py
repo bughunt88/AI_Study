@@ -52,7 +52,7 @@ model.compile(loss = 'categorical_crossentropy',optimizer = 'adam',metrics = ['a
 from tensorflow.keras.callbacks import EarlyStopping,ModelCheckpoint
 es = EarlyStopping(monitor='val_loss', patience=16, mode='auto')
 
-modelpath = './ModelCheckPoint/k46_fashon_{epoch:02d}-{val_loss:.4f}.hdf5'
+modelpath = '../data/modelcheckpoint/k46_fashon_{epoch:02d}-{val_loss:.4f}.hdf5'
 cp = ModelCheckpoint(filepath=modelpath, monitor='val_loss', save_best_only=True, mode='auto')
 
 hist = model.fit(x_train, y_train, epochs=60, batch_size=10, validation_split=0.3, verbose=1, callbacks=[es, cp])
@@ -69,6 +69,7 @@ y_predict = model.predict(x_test[:10])
 # 시각화
 import matplotlib.pyplot as plt
 
+plt.rc('font', family='NanumGothic') # For Windows
 
 plt.figure(figsize=(10,6))
 plt.subplot(2,1,1)
