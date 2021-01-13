@@ -1,8 +1,3 @@
-# 사이킷런 데이터셋
-# LSTM으로 모델링
-# Dense 와 성능비교
-
-
 
 import numpy as np
 from sklearn.datasets import load_breast_cancer
@@ -36,10 +31,19 @@ x_val = x_val.reshape(x_val.shape[0],x_val.shape[1],1)
 # 2. 모델 
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM
+from tensorflow.keras.layers import Dense, Input, LSTM,Conv1D,MaxPooling1D,Dropout,Flatten
 
 model=Sequential()
-model.add(LSTM(120, activation='relu', input_shape=(30,1)))
+model.add(Conv1D(filters=64, kernel_size=2, padding='same', activation='relu', input_shape=(30,1))) 
+model.add(MaxPooling1D(pool_size=1))
+model.add(Conv1D(filters=52, kernel_size=2, padding='same', activation='relu')) 
+model.add(MaxPooling1D(pool_size=1))
+model.add(Conv1D(filters=32, kernel_size=2, padding='same', activation='relu')) 
+model.add(MaxPooling1D(pool_size=1))
+model.add(Conv1D(filters=12, kernel_size=2, padding='same', activation='relu')) 
+model.add(MaxPooling1D(pool_size=2))
+model.add(Dropout(0.2))
+model.add(Flatten())
 model.add(Dense(120))
 model.add(Dense(60))
 model.add(Dense(60))
@@ -62,41 +66,16 @@ hist = model.fit(x_train, y_train, epochs=1000, batch_size=8, validation_data=(x
 
 loss, mae = model.evaluate(x_test, y_test, batch_size=8)
 
-
-print('loss : ',loss)
-
-print('mae : ',mae)
-
-
-
-y_predict = model.predict(x_val)
-
-print('y_predict: ', y_predict)
-# [[1.0000000e+00 8.6358709e-10]
-#  [4.4308349e-02 9.5791960e-01]
-#  [1.0000000e+00 3.0873505e-08]
-#  [1.0034841e-02 9.9010718e-01]]
-
-print('y_predict_argmax: ', y_predict.argmax(axis=1)) #0이 열, 1이 행
-
-
-# 그래프 
-import matplotlib.pyplot as plt
-
-
-# plt.plot(x,y)
-
-plt.plot(hist.history['loss'])
-plt.plot(hist.history['val_loss'])
-plt.plot(hist.history['acc'])
-plt.plot(hist.history['val_acc'])
-plt.title('loss & acc')
-plt.ylabel('loss, acc')
-plt.xlabel('epoch')
-plt.legend(['train_loss', 'val loss', 'train acc', 'val acc'])
-plt.show()
+print('loss : ', loss)
+print('mae : ', mae)
 
 
 # loss :  0.15454581379890442
 # mae :  0.9532163739204407 
+
+
+# conv1d
+# loss :  0.14320489764213562
+# mae :  0.9532163739204407
+
 

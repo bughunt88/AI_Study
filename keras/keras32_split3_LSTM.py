@@ -47,6 +47,11 @@ x_predict = split_x(b,size-1)
 x = dataset[   : ,  :size-1]
 y = dataset[   : ,   size-1]
 
+
+print(x)
+
+print(y)
+
 # 슬라이싱 
 
 from sklearn.model_selection import train_test_split
