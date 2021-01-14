@@ -50,12 +50,10 @@ model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc']
 hist = model.fit(x_train,y_train, epochs=20, batch_size=16, verbose=1, validation_split=0.2,callbacks=[es])
 
 
-
 model.save('../data/h5/k51_1_model2.h5')
 # 훈련한 다음에 모델을 저장을 하게 되면 가중치(W) 까지 저장된다!
 # 모델을 저장하고 싶으면 컴파일 훈련 전에 저장
 # 가중치까지 저장하고 싶으면 컴파일 훈련 후 저장 
-
 
 
 #4. 평가 훈련

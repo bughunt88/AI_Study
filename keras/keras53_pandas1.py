@@ -49,8 +49,6 @@ print(df.info())
 print(df.describe())
 # 평균, min, max 값 정보를 보여준다 
 
-print(df.describe())
-
 df.columns = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
 # 컬럼 명 변경
 
