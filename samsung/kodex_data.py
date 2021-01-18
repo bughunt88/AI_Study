@@ -32,8 +32,6 @@ def split_x(seq, size):
 total_kodex_data  = split_x(total_kodex_data,size)
 
 
-print(total_kodex_data)
-
 '''
 # 상관 계수 시각화!
 import matplotlib.pyplot as plt
