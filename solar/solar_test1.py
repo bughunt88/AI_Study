@@ -1,144 +1,128 @@
-
-
 import numpy as np
 import pandas as pd
 
+df = pd.read_csv('../data/solar/train/train.csv')
 
-df = pd.read_csv('../data/solar/train.csv', index_col=None,header=0,encoding='CP949')
+df.drop(['Hour','Minute','Day'], axis =1, inplace = True)
+# print(df.shape) # (52560, 7)
 
-df = df.astype('float32')
+data = df.to_numpy()
+data = data.reshape(1095,48,6)
 
-
-total_data = df.to_numpy()
-
-def split_xy(dataset, time_steps, y_column, x_steps):
-    x,y = list(), list()
-    for i in range(len(dataset)):
-
-        i = i*time_steps
-
-        x_end_number = i + time_steps*x_steps
-        y_end_number = x_end_number + time_steps*y_column
-
-        if y_end_number > len(dataset):
+def split_xy(data,timestep,ynum):
+    x,y = [],[]
+    for i in range(len(data)):
+        x_end = i + timestep
+        y_end = x_end + ynum
+        if y_end > len(data):
             break
+        x_tmp = data[i:x_end]
+        y_tmp = data[x_end:y_end,:,-1]
+        x.append(x_tmp)
+        y.append(y_tmp)
+    return(np.array(x),np.array(y))
+x,y = split_xy(data,7,2)
 
-        temp_x = dataset[i:x_end_number,:]
-        temp_y = dataset[x_end_number:y_end_number]
+# x.shape = (1087,7,48,6)
+# y.shape = (1087,2,48)  
 
-        x.append(temp_x)
-        y.append(temp_y)
+# x,y = split_xy(data,7,2)
+# x.shape = (1087,7,48,6)
+# y.shape = (1087,2,48,6)
 
-    return np.array(x), np.array(y)
+from sklearn.model_selection import train_test_split as tts
+# x_train,x_test,y_train,y_test = tts(x,y,train_size = 0.8, shuffle = True, random_state = 0)
 
-x, y = split_xy(total_data,48,2,7)
+#2. 모델구성
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, Dropout, MaxPooling2D, LeakyReLU, Reshape
 
-# y의 인덱스 값
-y_index_list = y[0,:,:3]
-
-# x, y의 실 데이터 정리 
-x = x[:,:,3:]
-y = y[:,:,3:]
-
-
-
-# x_shape1 = x.shape[1]
-# x_shape2 = x.shape[2]
-# '''
-# from sklearn.model_selection import train_test_split
-# x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.7, shuffle=False)
-
-# x_train = x_train.reshape(x_train.shape[0], x_shape1*x_shape2)
-# x_test = x_test.reshape(x_test.shape[0], x_shape1*x_shape2)
-# '''
-
-# y = y.reshape(y.shape[0], y.shape[1]*y.shape[2])
-
-# '''
-# from sklearn.preprocessing import MinMaxScaler
-# scaler = MinMaxScaler()
-# scaler.fit(x_train)
-# x_train = scaler.transform(x_train)
-# x_test = scaler.transform(x_test)
-
-# x_train = x_train.reshape(x_train.shape[0], x_shape1, x_shape2)
-# x_test = x_test.reshape(x_test.shape[0], x_shape1, x_shape2)
-# '''
-
-print(x.shape)
-print(y.shape)
-
-
-#모델 구성
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Dense, Flatten, Dropout,Input,Activation, LSTM, Reshape, MaxPool1D
-
-
+drop = 0.3
 model = Sequential()
-
-#model.add(LSTM(10, activation='relu', input_shape=(336,9))) 
-#model.add(Reshape(target_shape=(96, 10)))
-
-
-model = Sequential()
-model.add(Conv1D(filters=32, kernel_size=1, activation='relu',input_shape=(336,9)))
-model.add(MaxPool1D(pool_size=2))
+model.add(Conv2D(512,2,padding = 'same', input_shape = (7,48,6)))
+model.add(LeakyReLU(alpha = 0.05))
+model.add(MaxPooling2D(2))
+model.add(Dropout(drop))
+model.add(Conv2D(256,2,padding = 'same'))
+model.add(LeakyReLU(alpha = 0.05))
+model.add(Dropout(drop))
+model.add(Conv2D(128,2,padding = 'same'))
+model.add(LeakyReLU(alpha = 0.05))
 model.add(Flatten())
-model.add(Dense(96*9))
+model.add(Dense(256))
+model.add(LeakyReLU(alpha = 0.05))
+model.add(Dropout(drop))
+model.add(Dense(128))
+model.add(LeakyReLU(alpha = 0.05))
+model.add(Dense(256))
+model.add(LeakyReLU(alpha = 0.05))
+model.add(Dense(2*48))
+model.add(LeakyReLU(alpha = 0.05))
+model.add(Reshape((2,48)))
+# model.summary()
+
+#3. 컴파일 훈련
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+es = EarlyStopping(monitor = 'val_loss', patience = 20)
+lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.3, patience = 10, verbose = 1)
+model.compile(loss = 'mse', optimizer = 'adam', metrics = ['mae'])
+
+# 모델 9번 돌리기 
+d = []  
+for l in range(9):
+   # cp = ModelCheckpoint(filepath = '../data/solar/data/modelcheckpoint/dacon%d.hdf5'%l,monitor='val_loss', save_best_only=True)
+    model.fit(x,y,epochs= 1000, validation_split=0.2, batch_size =8, callbacks = [es,lr])
+
+    c = []
+    for i in range(81):
+        testx = pd.read_csv('../data/solar/test/%d.csv'%i)
+        testx.drop(['Hour','Minute','Day'], axis =1, inplace = True)
+        testx = testx.to_numpy()  
+        testx = testx.reshape(7,48,6)
+        testx,null_y = split_xy(testx,7,0)
+        y_pred = model.predict(testx)
+        y_pred = y_pred.reshape(2,48)
+        a = []
+        for j in range(2):
+            b = []
+            for k in range(48):
+                b.append(y_pred[j,k])
+            a.append(b)   
+        c.append(a)
+    d.append(c)
+    # c = np.array(c) # (81, 2, 48)
+d = np.array(d)
+# print(d.shape) (9, 81, 2, 48)
+
+print(d)
 
 '''
-model = Sequential()
-model.add(Conv1D(filters=16, kernel_size=1, activation='relu',input_shape=(336,9)))
-model.add(MaxPool1D(pool_size=2))
-model.add(LSTM(8, activation='relu'))
-model.add(Dense(96*9))
+
+### 뻘짓!! 쉐이프 바꿔주는중~~~
+e = []
+for i in range(81):
+    f = []
+    for j in range(2):
+        g = []
+        for k in range(48):
+            h = []
+            for l in range(9):
+                h.append(d[l,i,j,k])
+            g.append(h)
+        f.append(g)
+    e.append(f)
+
+e = np.array(e)
+df_sub = pd.read_csv('./practice/dacon/data/sample_submission.csv', index_col = 0, header = 0)
+
+# submit 파일에 데이터들 덮어 씌우기!!
+for i in range(81):
+    for j in range(2):
+        for k in range(48):
+            df = pd.DataFrame(e[i,j,k])
+            for l in range(9):
+                df_sub.iloc[[i*96+j*48+k],[l]] = df.quantile(q = ((l+1)/10.),axis = 0)[0]
+
+df_sub.to_csv('./practice/dacon/data/submit.csv')
+
 '''
-
-
-#컴파일, 훈련
-model.compile(loss='mse', optimizer='adam', metrics=['mae'])
-
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-early_stopping = EarlyStopping(monitor='loss', patience=5, mode='auto')
-
-#savepath = './samsung/check_point.h5'
-
-#cp = ModelCheckpoint(filepath=savepath, monitor='val_loss',save_best_only=True,mode='min')
-
-hist = model.fit(x, y, epochs=10,  validation_split=0.3, verbose=1, batch_size=32 ,callbacks=[early_stopping]) #, cp])
-
-#평가, 예측
-loss, mae = model.evaluate([x], y, batch_size=32)
-print('loss, mae: ', loss, mae)
-
-
-for n in range(81):
-    load_data = pd.read_csv('../data/solar/test/'+n+'.csv', index_col=None,header=0,encoding='CP949')
-
-    print(load_data)
-
-
-
-y_predict = model.predict([x])
-
-y_predict = y_predict.reshape(y_predict.shape[0], 96, 9)
-
-
-print(y_predict) # (1087, 96, 9)
-print(y_predict.shape) # (1087, 96, 9)
-
-
-
-
-# '''
-# #RMSE, R2
-# from sklearn.metrics import mean_squared_error
-# def RMSE(y_test, y_predict):
-#     return np.sqrt(mean_squared_error(y_test, y_predict))
-# print('RMSE: ', RMSE(y, y_predict))
-
-# from sklearn.metrics import r2_score
-# R2 = r2_score(y, y_predict)
-# print('R2: ', R2)
-
-# '''

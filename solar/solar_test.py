@@ -30,7 +30,9 @@ def split_xy(dataset, time_steps, y_column, x_steps):
 
     return np.array(x), np.array(y)
 
-x, y = split_xy(total_data,48,2,7)
+x, y = split_xy(total_data,336,2,7)
+
+
 
 y_index_list = y[0,:,:3]
 
@@ -114,10 +116,9 @@ y_predict = y_predict.reshape(y_predict.shape[0], 96, 6)
 
 total_y_predict = []
 total_predict = []
+
 for n in range(81):
-    file_title = '../data/solar/test/'
-    file_title += str(n)
-    file_title += '.csv'
+    file_title = '../data/solar/test/'+ str(n) + '.csv'
     load_data = pd.read_csv(file_title, index_col=None,header=0,encoding='CP949')
     load_data = load_data.to_numpy()
     load_data_x = load_data[:,3:]
