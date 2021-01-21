@@ -95,14 +95,16 @@ def train_data(X_train, Y_train, X_valid, Y_valid, X_test):
     
     return LGBM_models, LGBM_actual_pred
 
-
-
-
 # Target1
 models_1, results_1 = train_data(X_train_1, Y_train_1, X_valid_1, Y_valid_1, X_test)
 
 # Target2
 models_2, results_2 = train_data(X_train_2, Y_train_2, X_valid_2, Y_valid_2, X_test)
+
+
+print(results_1)
+print(results_1.shape)
+
 
 
 submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = results_1.sort_index().values

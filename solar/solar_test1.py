@@ -1,128 +1,139 @@
 import numpy as np
 import pandas as pd
+import tensorflow.keras.backend as K
 
-df = pd.read_csv('../data/solar/train/train.csv')
+train = pd.read_csv('../data/solar/train/train.csv')
+submission = pd.read_csv('../data/solar/sample_submission.csv')
 
-df.drop(['Hour','Minute','Day'], axis =1, inplace = True)
-# print(df.shape) # (52560, 7)
+def Add_features(data):
+    data['cos'] = np.cos(np.pi/2 - np.abs(data['Hour']%12 - 6)/6*np.pi/2)
+    data.insert(1,'GHI',data['DNI']*data['cos']+data['DHI'])
+    data.drop(['cos'], axis= 1, inplace = True)
+    return data
 
-data = df.to_numpy()
-data = data.reshape(1095,48,6)
+def preprocess_data(data, is_train = True):
+    data['cos'] = np.cos(np.pi/2 - np.abs(data['Hour']%12 - 6)/6*np.pi/2)
+    data.insert(1,'GHI',data['DNI']*data['cos']+data['DHI'])
+    temp = data.copy()
+    temp = temp[['Hour','TARGET','GHI','DHI','DNI','WS','RH','T']]
 
-def split_xy(data,timestep,ynum):
-    x,y = [],[]
+    if is_train == True:
+        temp['TARGET1'] = temp['TARGET'].shift(-48).fillna(method = 'ffill')
+        temp['TARGET2'] = temp['TARGET'].shift(-96).fillna(method = 'ffill')
+        temp = temp.dropna()
+
+        return temp.iloc[:-96]
+
+    elif is_train == False:
+        temp = temp[['Hour','TARGET','GHI','DHI','DNI','WS','RH','T']]
+
+        return temp.iloc[-48:, :]
+
+df_train = preprocess_data(train)
+x_train = df_train.to_numpy()
+
+df_test = []
+for i in range(81):
+    file_path = '../data/solar/test/%d.csv'%i
+    temp = pd.read_csv(file_path)
+    temp = preprocess_data(temp, is_train=False)
+    df_test.append(temp)
+
+x_test = pd.concat(df_test)
+x_test = x_test.to_numpy()
+# x_test.shape = (3888, 8) ## 81일간 하루에 48시간씩 총 8 개의 컬럼 << 이걸 프레딕트 하면 81일간 48시간마다 2개의 컬럼(내일,모레)
+
+def split_xy(data,timestep):
+    x, y1, y2 = [],[],[]
     for i in range(len(data)):
         x_end = i + timestep
-        y_end = x_end + ynum
-        if y_end > len(data):
+        if x_end>len(data):
             break
-        x_tmp = data[i:x_end]
-        y_tmp = data[x_end:y_end,:,-1]
-        x.append(x_tmp)
-        y.append(y_tmp)
-    return(np.array(x),np.array(y))
-x,y = split_xy(data,7,2)
+        tmp_x = data[i:x_end,:-2]
+        tmp_y1 = data[x_end-1:x_end,-2]
+        tmp_y2 = data[x_end-1:x_end,-1]
+        x.append(tmp_x)
+        y1.append(tmp_y1)
+        y2.append(tmp_y2)
+    return(np.array(x),np.array(y1),np.array(y2))
 
-# x.shape = (1087,7,48,6)
-# y.shape = (1087,2,48)  
+x,y1,y2 = split_xy(x_train,1)
 
-# x,y = split_xy(data,7,2)
-# x.shape = (1087,7,48,6)
-# y.shape = (1087,2,48,6)
+def split_x(data,timestep):
+    x = []
+    for i in range(len(data)):
+        x_end = i + timestep
+        if x_end>len(data):
+            break
+        tmp_x = data[i:x_end]
+        x.append(tmp_x)
+    return(np.array(x))
+
+x_test = split_x(x_test,1)
+# print(x.shape,y1.shape,y2.shape) # (52464, 1, 8) (52464, 1) (52464, 1) >> 한 시간대에 x행으로 다음날, 모레 같은 시간대의 타겟
+# y1 을 내일의 타겟, y2 를 모레의 타겟!!
 
 from sklearn.model_selection import train_test_split as tts
-# x_train,x_test,y_train,y_test = tts(x,y,train_size = 0.8, shuffle = True, random_state = 0)
+x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x,y1,y2, train_size = 0.7,shuffle = True, random_state = 0)
 
-#2. 모델구성
+def quantile_loss(q, y_true, y_pred):
+    err = (y_true - y_pred)
+    return K.mean(K.maximum(q*err, (q-1)*err), axis=-1)
+
+quantiles = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+
+#2. 모델링
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, Dropout, MaxPooling2D, LeakyReLU, Reshape
+from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv1D
 
-drop = 0.3
-model = Sequential()
-model.add(Conv2D(512,2,padding = 'same', input_shape = (7,48,6)))
-model.add(LeakyReLU(alpha = 0.05))
-model.add(MaxPooling2D(2))
-model.add(Dropout(drop))
-model.add(Conv2D(256,2,padding = 'same'))
-model.add(LeakyReLU(alpha = 0.05))
-model.add(Dropout(drop))
-model.add(Conv2D(128,2,padding = 'same'))
-model.add(LeakyReLU(alpha = 0.05))
-model.add(Flatten())
-model.add(Dense(256))
-model.add(LeakyReLU(alpha = 0.05))
-model.add(Dropout(drop))
-model.add(Dense(128))
-model.add(LeakyReLU(alpha = 0.05))
-model.add(Dense(256))
-model.add(LeakyReLU(alpha = 0.05))
-model.add(Dense(2*48))
-model.add(LeakyReLU(alpha = 0.05))
-model.add(Reshape((2,48)))
-# model.summary()
+def mymodel():
+    model = Sequential()
+    model.add(Conv1D(32,2,padding = 'same', activation = 'relu',input_shape = (1,8)))
+    model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
+    model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
+    model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
+    model.add(Flatten())
+    model.add(Dense(32, activation = 'relu'))
+    model.add(Dense(32, activation = 'relu'))
+    model.add(Dense(1))
+    return model
 
 #3. 컴파일 훈련
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 es = EarlyStopping(monitor = 'val_loss', patience = 20)
-lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.3, patience = 10, verbose = 1)
-model.compile(loss = 'mse', optimizer = 'adam', metrics = ['mae'])
+lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 10, factor = 0.4, verbose = 1)
+epochs = 1000
+bs = 8
 
-# 모델 9번 돌리기 
-d = []  
-for l in range(9):
-   # cp = ModelCheckpoint(filepath = '../data/solar/data/modelcheckpoint/dacon%d.hdf5'%l,monitor='val_loss', save_best_only=True)
-    model.fit(x,y,epochs= 1000, validation_split=0.2, batch_size =8, callbacks = [es,lr])
 
-    c = []
-    for i in range(81):
-        testx = pd.read_csv('../data/solar/test/%d.csv'%i)
-        testx.drop(['Hour','Minute','Day'], axis =1, inplace = True)
-        testx = testx.to_numpy()  
-        testx = testx.reshape(7,48,6)
-        testx,null_y = split_xy(testx,7,0)
-        y_pred = model.predict(testx)
-        y_pred = y_pred.reshape(2,48)
-        a = []
-        for j in range(2):
-            b = []
-            for k in range(48):
-                b.append(y_pred[j,k])
-            a.append(b)   
-        c.append(a)
-    d.append(c)
-    # c = np.array(c) # (81, 2, 48)
-d = np.array(d)
-# print(d.shape) (9, 81, 2, 48)
+# 내일!!
+x = []
+for i in quantiles:
+    model = mymodel()
+    #filepath_cp = f'../dacon/data/solar/modelcheckpoint/dacon_y1_quantile_{i:.1f}.hdf5'
+    #cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
+    model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
+    model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,lr])
+    pred = pd.DataFrame(model.predict(x_test).round(2))
+    x.append(pred)
+df_temp1 = pd.concat(x, axis = 1)
+df_temp1[df_temp1<0] = 0
+num_temp1 = df_temp1.to_numpy()
+submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = num_temp1
 
-print(d)
-
-'''
-
-### 뻘짓!! 쉐이프 바꿔주는중~~~
-e = []
-for i in range(81):
-    f = []
-    for j in range(2):
-        g = []
-        for k in range(48):
-            h = []
-            for l in range(9):
-                h.append(d[l,i,j,k])
-            g.append(h)
-        f.append(g)
-    e.append(f)
-
-e = np.array(e)
-df_sub = pd.read_csv('./practice/dacon/data/sample_submission.csv', index_col = 0, header = 0)
-
-# submit 파일에 데이터들 덮어 씌우기!!
-for i in range(81):
-    for j in range(2):
-        for k in range(48):
-            df = pd.DataFrame(e[i,j,k])
-            for l in range(9):
-                df_sub.iloc[[i*96+j*48+k],[l]] = df.quantile(q = ((l+1)/10.),axis = 0)[0]
-
-df_sub.to_csv('./practice/dacon/data/submit.csv')
-
-'''
+x = []
+# 모레!!
+for i in quantiles:
+    model = mymodel()
+    #filepath_cp = f'../dacon/data/solar/modelcheckpoint/dacon_y2_quantile_{i:.1f}.hdf5'
+    #cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
+    model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
+    model.fit(x_train,y2_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y2_val),callbacks = [es,lr])
+    pred = pd.DataFrame(model.predict(x_test).round(2))
+    x.append(pred)
+df_temp2 = pd.concat(x, axis = 1)
+df_temp2[df_temp2<0] = 0
+num_temp2 = df_temp2.to_numpy()
+submission.loc[submission.id.str.contains("Day8"), "q_0.1":] = num_temp2
+        
+submission.to_csv('../data/solar/value/111.csv', index = False)
