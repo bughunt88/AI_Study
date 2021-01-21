@@ -1,10 +1,6 @@
 
-# 해볼 것 
+# 데이터 일단위로 잘라서 시계열 만들기 
 
-# 1. 댄스모델로 해볼 것 
-# 유튜브에 잘 나온다던 모델로 변경해볼것 
-
-# 2. 데이터 배열을 바꿔서 해볼 것
 
 
 import numpy as np
@@ -14,11 +10,11 @@ import tensorflow.keras.backend as K
 train = pd.read_csv('../data/solar/train/train.csv')
 submission = pd.read_csv('../data/solar/sample_submission.csv')
 
-def Add_features(data):
-    data['cos'] = np.cos(np.pi/2 - np.abs(data['Hour']%12 - 6)/6*np.pi/2)
-    data.insert(1,'GHI',data['DNI']*data['cos']+data['DHI'])
-    data.drop(['cos'], axis= 1, inplace = True)
-    return data
+# def Add_features(data):
+#     data['cos'] = np.cos(np.pi/2 - np.abs(data['Hour']%12 - 6)/6*np.pi/2)
+#     data.insert(1,'GHI',data['DNI']*data['cos']+data['DHI'])
+#     data.drop(['cos'], axis= 1, inplace = True)
+#     return data
 
 def preprocess_data(data, is_train = True):
     data['cos'] = np.cos(np.pi/2 - np.abs(data['Hour']%12 - 6)/6*np.pi/2)
@@ -27,8 +23,8 @@ def preprocess_data(data, is_train = True):
     temp = temp[['Hour','TARGET','GHI','DHI','DNI','WS','RH','T']]
 
     if is_train == True:
-        temp['TARGET1'] = temp['TARGET'].shift(-48).fillna(method = 'ffill')
-        temp['TARGET2'] = temp['TARGET'].shift(-96).fillna(method = 'ffill')
+        #temp['TARGET1'] = temp['TARGET'].shift(-48).fillna(method = 'ffill')
+        #temp['TARGET2'] = temp['TARGET'].shift(-96).fillna(method = 'ffill')
         temp = temp.dropna()
 
         return temp.iloc[:-96]
@@ -51,6 +47,8 @@ for i in range(81):
 x_test = pd.concat(df_test)
 x_test = x_test.to_numpy()
 # x_test.shape = (3888, 8) ## 81일간 하루에 48시간씩 총 8 개의 컬럼 << 이걸 프레딕트 하면 81일간 48시간마다 2개의 컬럼(내일,모레)
+
+
 
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 scale = StandardScaler()
@@ -120,7 +118,7 @@ def mymodel():
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 es = EarlyStopping(monitor = 'val_loss', patience = 10)
 lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.3, verbose = 1)
-epochs = 1
+epochs = 1000
 bs = 32
 
 
@@ -132,7 +130,6 @@ for i in quantiles:
     #cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
     model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
     model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,lr])
-    print(model.predict(x_test))
     pred = pd.DataFrame(model.predict(x_test).round(2))
     x.append(pred)
 df_temp1 = pd.concat(x, axis = 1)

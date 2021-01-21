@@ -7,6 +7,7 @@
 # 2. 데이터 배열을 바꿔서 해볼 것
 
 
+
 import numpy as np
 import pandas as pd
 import tensorflow.keras.backend as K
@@ -89,7 +90,7 @@ x_test = split_x(x_test,1)
 # y1 을 내일의 타겟, y2 를 모레의 타겟!!
 
 from sklearn.model_selection import train_test_split as tts
-x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x,y1,y2, train_size = 0.7,shuffle = False, random_state = 0)
+x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x,y1,y2, train_size = 0.7,shuffle = True, random_state = 0)
 
 def quantile_loss(q, y_true, y_pred):
     err = (y_true - y_pred)
@@ -99,28 +100,58 @@ quantiles = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
 #2. 모델링
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv1D
+from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv1D, Input,BatchNormalization,Activation
+
+from tensorflow.keras.models import Sequential,  Model
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout, LSTM, Input, Reshape
+
 
 def mymodel():
-    model = Sequential()
-    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (1,8)))
-    model.add(Conv1D(128,2,padding = 'same', activation = 'relu'))
-    model.add(Conv1D(64,2,padding = 'same', activation = 'relu'))
-    model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
-    model.add(Flatten())
-    model.add(Dense(128, activation = 'relu'))
-    model.add(Dense(64, activation = 'relu'))
-    model.add(Dense(32, activation = 'relu'))
-    model.add(Dense(16, activation = 'relu'))
-    model.add(Dense(8, activation = 'relu'))
-    model.add(Dense(1))
+
+    # model = Sequential()
+    # model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (1,8)))
+    # model.add(Conv1D(128,2,padding = 'same', activation = 'relu'))
+    # model.add(Conv1D(64,2,padding = 'same', activation = 'relu'))
+    # model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
+    # model.add(Flatten())
+    # model.add(Dense(128, activation = 'relu'))
+    # model.add(Dense(64, activation = 'relu'))
+    # model.add(Dense(32, activation = 'relu'))
+    # model.add(Dense(16, activation = 'relu'))
+    # model.add(Dense(8, activation = 'relu'))
+    # model.add(Dense(1))
+
+    X = Input(shape=[1,8])
+    H = Dense(256)(X)
+    H = BatchNormalization()(H)
+    H = Activation('swish')(H)
+    H = Flatten()(H)
+    H = Dense(128)(H)
+    H = BatchNormalization()(H)
+    H = Activation('swish')(H)
+    H = Dense(64)(H)
+    H = BatchNormalization()(H)
+    H = Activation('swish')(H)
+    H = Dense(32)(H)
+    H = BatchNormalization()(H)
+    H = Activation('swish')(H)
+    H = Dense(16)(H)
+    H = BatchNormalization()(H)
+    H = Activation('swish')(H)
+    H = Dense(8)(H)
+    H = BatchNormalization()(H)
+    H = Activation('swish')(H)
+    Y = Dense(1)(H)
+    model = Model(X, Y)
+    
     return model
+
 
 #3. 컴파일 훈련
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 es = EarlyStopping(monitor = 'val_loss', patience = 10)
 lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.3, verbose = 1)
-epochs = 1
+epochs = 200
 bs = 32
 
 
@@ -132,7 +163,9 @@ for i in quantiles:
     #cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
     model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
     model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,lr])
+
     print(model.predict(x_test))
+
     pred = pd.DataFrame(model.predict(x_test).round(2))
     x.append(pred)
 df_temp1 = pd.concat(x, axis = 1)

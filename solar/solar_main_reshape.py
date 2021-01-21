@@ -1,18 +1,30 @@
-
-# 해볼 것 
-
-# 1. 댄스모델로 해볼 것 
-# 유튜브에 잘 나온다던 모델로 변경해볼것 
-
-# 2. 데이터 배열을 바꿔서 해볼 것
+from google.colab import drive
+drive.mount('/content/drive')
 
 
-import numpy as np
 import pandas as pd
+import numpy as np
+import os
+import glob
+import random
+import tensorflow as tf
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import tensorflow.keras.backend as K
+import tensorflow.keras.layers as L
+import tensorflow.keras.models as M
 
-train = pd.read_csv('../data/solar/train/train.csv')
-submission = pd.read_csv('../data/solar/sample_submission.csv')
+
+#total_data = np.load('/content/drive/My Drive/samsung_data.npy')
+#total_kodex_data = np.load('/content/drive/My Drive/kodex_data.npy')
+
+# train 데이터 불러오기
+# train = pd.read_csv('/content/drive/My Drive/solar/train/train.csv')
+# submission 데이터 불러오기
+# sub = pd.read_csv('/content/drive/My Drive/solar/sample_submission.csv')
+
+train = pd.read_csv('/content/drive/My Drive/solar/train/train.csv')
+submission = pd.read_csv('/content/drive/My Drive/solar/sample_submission.csv')
 
 def Add_features(data):
     data['cos'] = np.cos(np.pi/2 - np.abs(data['Hour']%12 - 6)/6*np.pi/2)
@@ -41,9 +53,10 @@ def preprocess_data(data, is_train = True):
 df_train = preprocess_data(train)
 x_train = df_train.to_numpy()
 
+
 df_test = []
 for i in range(81):
-    file_path = '../data/solar/test/' + str(i) + '.csv'
+    file_path = '/content/drive/My Drive/solar/test/%d.csv'%i
     temp = pd.read_csv(file_path)
     temp = preprocess_data(temp, is_train=False)
     df_test.append(temp)
@@ -88,6 +101,12 @@ x_test = split_x(x_test,1)
 # print(x.shape,y1.shape,y2.shape) # (52464, 1, 8) (52464, 1) (52464, 1) >> 한 시간대에 x행으로 다음날, 모레 같은 시간대의 타겟
 # y1 을 내일의 타겟, y2 를 모레의 타겟!!
 
+
+x = x.reshape(x.shape[0], 8, 1)
+x_test = x_test.reshape(x_test.shape[0], 8, 1)
+
+
+
 from sklearn.model_selection import train_test_split as tts
 x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x,y1,y2, train_size = 0.7,shuffle = False, random_state = 0)
 
@@ -103,7 +122,7 @@ from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv1D
 
 def mymodel():
     model = Sequential()
-    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (1,8)))
+    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (8,1)))
     model.add(Conv1D(128,2,padding = 'same', activation = 'relu'))
     model.add(Conv1D(64,2,padding = 'same', activation = 'relu'))
     model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
@@ -120,7 +139,7 @@ def mymodel():
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 es = EarlyStopping(monitor = 'val_loss', patience = 10)
 lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.3, verbose = 1)
-epochs = 1
+epochs = 1000
 bs = 32
 
 
@@ -132,13 +151,18 @@ for i in quantiles:
     #cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
     model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
     model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,lr])
+
     print(model.predict(x_test))
-    pred = pd.DataFrame(model.predict(x_test).round(2))
+
+    x_reshape = model.predict(x_test).round(2)
+
+    pred = pd.DataFrame(x_reshape)
     x.append(pred)
 df_temp1 = pd.concat(x, axis = 1)
 df_temp1[df_temp1<0] = 0
 num_temp1 = df_temp1.to_numpy()
 submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = num_temp1
+
 
 # 모레!!
 x = []
@@ -149,11 +173,14 @@ for i in quantiles:
     model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
     model.fit(x_train,y2_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y2_val),callbacks = [es,lr])
     pred = pd.DataFrame(model.predict(x_test).round(2))
+
+    x_reshape = model.predict(x_test).round(2)
+    pred = pd.DataFrame(x_reshape)
     x.append(pred)
 df_temp2 = pd.concat(x, axis = 1)
 df_temp2[df_temp2<0] = 0
 num_temp2 = df_temp2.to_numpy()
 submission.loc[submission.id.str.contains("Day8"), "q_0.1":] = num_temp2
         
-submission.to_csv('../data/solar/value/0120_trynew.csv', index = False)
+submission.to_csv('/content/drive/My Drive/solar/value/test_value_8_1.csv', index = False)
 

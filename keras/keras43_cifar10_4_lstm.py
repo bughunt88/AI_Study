@@ -42,16 +42,13 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropou
 
 
 inputs = Input(shape=(x_shape_val,n))
-
 dense1 = LSTM(128, activation='relu')(inputs)
 dense1 = Dropout(0.2)(dense1)
 dense1 = Dense(64, activation='relu')(dense1)
 dense1 = Dropout(0.2)(dense1)
 dense1 = Dense(48, activation='relu')(dense1)
 dense1 = Dropout(0.2)(dense1)
-
 outputs = Dense(10,activation='softmax')(dense1)
-
 model = Model(inputs= inputs, outputs = outputs)
 
 

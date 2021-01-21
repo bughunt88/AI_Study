@@ -45,8 +45,7 @@ for i in range(81):
 X_test = pd.concat(df_test)
 
 
-print(X_test)
-
+print(df_train.shape)
 
 from sklearn.model_selection import train_test_split
 X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(df_train.iloc[:, :-2], df_train.iloc[:, -2], test_size=0.3, random_state=0)
