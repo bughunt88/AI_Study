@@ -200,7 +200,7 @@ w1.plot()
 print("###############")
 print(w1.train)
 
-'''
+
 
 print(w1.train.element_spec)
 
@@ -356,5 +356,3 @@ AR_Lstm_actual_pred_nn = np.where(AR_Lstm_actual_pred_denorm<0, 0, AR_Lstm_actua
 
 sub.iloc[:,1:] = AR_Lstm_actual_pred_nn
 sub.to_csv('../data/solar/value/submission_lstm_nn.csv',index=False)
-
-'''

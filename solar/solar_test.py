@@ -1,183 +1,213 @@
 
+# 해볼 것 
+
+# 1. 댄스모델로 해볼 것 
+# 유튜브에 잘 나온다던 모델로 변경해볼것 
+
+# 2. 데이터 배열을 바꿔서 해볼 것
+
+
 
 import numpy as np
 import pandas as pd
+import tensorflow.keras.backend as K
+
+train = pd.read_csv('../data/solar/train/train.csv')
+submission = pd.read_csv('../data/solar/sample_submission.csv')
 
 
-df = pd.read_csv('../data/solar/train.csv', index_col=None,header=0,encoding='CP949')
+def make_cos(dataframe): # 특정 열이 해가 뜨고 해가지는 시간을 가지고 각 시간의 cos를 계산해주는 함수
+    dataframe /=dataframe
+    c = dataframe.dropna()
+    d = c.to_numpy()
 
-df = df.astype('float32')
+    def into_cosine(seq):
+        for i in range(len(seq)):
+            if i < len(seq)/2:
+                seq[i] = float((len(seq)-1)/2) - (i)
+            if i >= len(seq)/2:
+                seq[i] = seq[len(seq) - i - 1]
+        seq = seq/ np.max(seq) * np.pi/2
+        seq = np.cos(seq)
+        return seq
 
-total_data = df.to_numpy()
+    d = into_cosine(d)
+    dataframe = dataframe.replace(to_replace = np.NaN, value = 0)
+    dataframe.loc[dataframe['cos'] == 1] = d
+    return dataframe
 
-def split_xy(dataset, time_steps, y_column, x_steps):
-    x,y = list(), list()
-    for i in range(len(dataset)):
+def preprocess_data(data, is_train = True):
+    a = pd.DataFrame()
+    for i in range(int(len(data)/48)):
+        tmp = pd.DataFrame()
+        tmp['cos'] = data.loc[i*48:(i+1)*48-1,'TARGET']
+        tmp['cos'] = make_cos(tmp)
+        a = pd.concat([a,tmp])
+    data['cos'] = a
+    data.insert(1,'GHI',data['DNI']*data['cos']+data['DHI'])
+    
+    # 새로운 TD, t-td 컬럼 추가 
+    c = 243.12
+    b = 17.62
+    gamma = (b * (data['T']) / (c + (data['T']))) + np.log(data['RH'] / 100)
+    dp = ( c * gamma) / (b - gamma)
+    data.insert(1,'Td',dp)
+    data.insert(1,'T-Td',data['T']-data['Td'])
 
-        i = i*time_steps
+    temp = data.copy()
+    temp = temp[['TARGET','GHI','DHI','DNI','Td','T-Td','T']]
 
-        x_end_number = i + time_steps*x_steps
-        y_end_number = x_end_number + time_steps*y_column
+    if is_train == True:
+        temp['TARGET1'] = temp['TARGET'].shift(-48).fillna(method = 'ffill')
+        temp['TARGET2'] = temp['TARGET'].shift(-96).fillna(method = 'ffill')
+        temp = temp.dropna()
 
-        if y_end_number > len(dataset):
+        return temp.iloc[:-96]
+
+    elif is_train == False:
+        temp = temp[['TARGET','GHI','DHI','DNI','Td','T-Td','T']]
+
+        return temp.iloc[-48:, :]
+
+df_train = preprocess_data(train)
+
+# 상관계수
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set(style='dark', font_scale=1.2, font='Malgun Gothic') # , palette='pastel'
+sns.color_palette('Paired',6)
+sns.heatmap(data=df_train.corr(), square=True, annot=True, cbar=True)
+plt.show()
+
+x_train = df_train.to_numpy()
+
+df_test = []
+for i in range(81):
+    file_path = '../data/solar/test/%d.csv'%i
+    temp = pd.read_csv(file_path)
+    temp = preprocess_data(temp, is_train=False)
+    df_test.append(temp)
+
+x_test = pd.concat(df_test)
+x_test = x_test.to_numpy()
+
+
+from sklearn.preprocessing import StandardScaler
+scale = StandardScaler()
+scale.fit(x_train[:,:-2])
+x_train[:,:-2] = scale.transform(x_train[:,:-2])
+x_test = scale.transform(x_test)
+
+
+
+def split_xy(data,timestep):
+    x, y1, y2 = [],[],[]
+    for i in range(len(data)):
+        x_end = i + timestep
+        if x_end>len(data):
             break
+        tmp_x = data[i:x_end,:-2]
+        tmp_y1 = data[x_end-1:x_end,-2]
+        tmp_y2 = data[x_end-1:x_end,-1]
+        x.append(tmp_x)
+        y1.append(tmp_y1)
+        y2.append(tmp_y2)
+    return(np.array(x),np.array(y1),np.array(y2))
+
+x,y1,y2 = split_xy(x_train,1)
+
+def split_x(data,timestep):
+    x = []
+    for i in range(len(data)):
+        x_end = i + timestep
+        if x_end>len(data):
+            break
+        tmp_x = data[i:x_end]
+        x.append(tmp_x)
+    return(np.array(x))
+
+x_test = split_x(x_test,1)
+
+
+print(x.shape)
+print(y1.shape)
+print(y2.shape)
+
+from sklearn.model_selection import train_test_split as tts
+x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x,y1,y2, train_size = 0.7,shuffle = True, random_state = 0)
+
+def quantile_loss(q, y_true, y_pred):
+    err = (y_true - y_pred)
+    return K.mean(K.maximum(q*err, (q-1)*err), axis=-1)
+
+quantiles = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+
+#2. 모델링
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv1D, Input,BatchNormalization,Activation
+
+from tensorflow.keras.models import Sequential,  Model
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout, LSTM, Input, Reshape
+
+
+def mymodel():
+
+    model = Sequential()
+    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (1,5)))
+    model.add(Conv1D(128,2,padding = 'same', activation = 'relu'))
+    model.add(Conv1D(64,2,padding = 'same', activation = 'relu'))
+    model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
+    model.add(Dense(128, activation = 'relu',input_shape = (1,5)))
+    model.add(Flatten())
+    model.add(Dense(128, activation = 'relu'))
+    model.add(Dense(64, activation = 'relu'))
+    model.add(Dense(32, activation = 'relu'))
+    model.add(Dense(16, activation = 'relu'))
+    model.add(Dense(8, activation = 'relu'))
+    model.add(Dense(1))
+    return model
+    
+
+#3. 컴파일 훈련
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
+es = EarlyStopping(monitor = 'val_loss', patience = 10)
+lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.3, verbose = 1)
+epochs = 300
+bs = 16
+
+
+# 내일!!
+x = []
+for i in quantiles:
+    model = mymodel()
+    #filepath_cp = f'../dacon/data/modelcheckpoint/dacon_02_y1_quantile_{i:.1f}.hdf5'
+    #cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
+    model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
+    model.fit(x_train,y1_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y1_val),callbacks = [es,lr])
+
+    print(model.predict(x_test))
+
+    pred = pd.DataFrame(model.predict(x_test).round(2))
+    x.append(pred)
+df_temp1 = pd.concat(x, axis = 1)
+df_temp1[df_temp1<0] = 0
+num_temp1 = df_temp1.to_numpy()
+submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = num_temp1
+
+# 모레!!
+x = []
+for i in quantiles:
+    model = mymodel()
+    #filepath_cp = f'../dacon/data/modelcheckpoint/dacon_02_y2_quantile_{i:.1f}.hdf5'
+    #cp = ModelCheckpoint(filepath_cp,save_best_only=True,monitor = 'val_loss')
+    model.compile(loss = lambda y_true,y_pred: quantile_loss(i,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(i,y,y_pred)])
+    model.fit(x_train,y2_train,epochs = epochs, batch_size = bs, validation_data = (x_val,y2_val),callbacks = [es,lr])
+    pred = pd.DataFrame(model.predict(x_test).round(2))
+    x.append(pred)
+df_temp2 = pd.concat(x, axis = 1)
+df_temp2[df_temp2<0] = 0
+num_temp2 = df_temp2.to_numpy()
+submission.loc[submission.id.str.contains("Day8"), "q_0.1":] = num_temp2
+        
+submission.to_csv('../data/solar/value/test_ver1.csv', index = False)
 
-        temp_x = dataset[i:x_end_number,:]
-        temp_y = dataset[x_end_number:y_end_number]
-
-        x.append(temp_x)
-        y.append(temp_y)
-
-    return np.array(x), np.array(y)
-
-x, y = split_xy(total_data,336,2,7)
-
-
-
-y_index_list = y[0,:,:3]
-
-# x, y의 실 데이터 정리 
-x = x[:,:,3:]
-y = y[:,:,3:]
-
-
-
-x_shape1 = x.shape[1]
-x_shape2 = x.shape[2]
-'''
-from sklearn.model_selection import train_test_split
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.7, shuffle=False)
-
-x_train = x_train.reshape(x_train.shape[0], x_shape1*x_shape2)
-x_test = x_test.reshape(x_test.shape[0], x_shape1*x_shape2)
-'''
-
-y = y.reshape(y.shape[0], y.shape[1]*y.shape[2])
-
-
-'''
-from sklearn.preprocessing import MinMaxScaler
-scaler = MinMaxScaler()
-scaler.fit(x_train)
-x_train = scaler.transform(x_train)
-x_test = scaler.transform(x_test)
-
-x_train = x_train.reshape(x_train.shape[0], x_shape1, x_shape2)
-x_test = x_test.reshape(x_test.shape[0], x_shape1, x_shape2)
-'''
-
-
-
-#모델 구성
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Dense, Flatten, Dropout,Input,Activation, LSTM, Reshape, MaxPool1D
-
-
-model = Sequential()
-
-#model.add(LSTM(10, activation='relu', input_shape=(336,9))) 
-#model.add(Reshape(target_shape=(96, 10)))
-
-
-model = Sequential()
-model.add(Conv1D(filters=32, kernel_size=1, activation='relu',input_shape=(336,6)))
-model.add(MaxPool1D(pool_size=2))
-model.add(Flatten())
-model.add(Dense(96*6))
-
-'''
-model = Sequential()
-model.add(Conv1D(filters=16, kernel_size=1, activation='relu',input_shape=(336,9)))
-model.add(MaxPool1D(pool_size=2))
-model.add(LSTM(8, activation='relu'))
-model.add(Dense(96*9))
-'''
-
-
-#컴파일, 훈련
-model.compile(loss='mse', optimizer='adam', metrics=['mae'])
-
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-early_stopping = EarlyStopping(monitor='loss', patience=5, mode='auto')
-
-#savepath = './samsung/check_point.h5'
-
-#cp = ModelCheckpoint(filepath=savepath, monitor='val_loss',save_best_only=True,mode='min')
-
-hist = model.fit(x, y, epochs=1,  validation_split=0.3, verbose=1, batch_size=32 ,callbacks=[early_stopping]) #, cp])
-
-#평가, 예측
-loss, mae = model.evaluate([x], y, batch_size=32)
-print('loss, mae: ', loss, mae)
-
-y_predict = model.predict([x])
-y_predict = y_predict.reshape(y_predict.shape[0], 96, 6)
-
-
-total_y_predict = []
-total_predict = []
-
-for n in range(81):
-    file_title = '../data/solar/test/'+ str(n) + '.csv'
-    load_data = pd.read_csv(file_title, index_col=None,header=0,encoding='CP949')
-    load_data = load_data.to_numpy()
-    load_data_x = load_data[:,3:]
-    load_data_x_res = load_data_x.reshape(1, load_data_x.shape[0],load_data_x.shape[1])
-    #모델에서 predict 값 넣는다
-    load_predict = model.predict(load_data_x_res)
-    load_predict = load_predict.reshape(96,6)
-    total_predict.append(load_predict)
-
-    total_y_predict.append(y_index_list)
-
-
-
-
-total_predict = np.array(total_predict)
-total_predict = total_predict.reshape(total_predict.shape[0]*total_predict.shape[1], 6)
-total_predict = pd.DataFrame(total_predict)
-
-print(total_predict.shape)
-
-total_y_predict = np.array(total_y_predict)
-total_y_predict = total_y_predict.reshape(total_y_predict.shape[0]*total_y_predict.shape[1], 3)
-
-print(total_y_predict.shape)
-
-total_predict = pd.concat([total_predict, total_predict])
-
-print(total_predict.shape)
-
-
-#total_predict.to_csv('../data/solar/total_predic.csv', sep=',')
-
-
-
-
-#     file_title =''
-
-#     print(load_data)
-
-
-
-# print(y_predict) # (1087, 96, 9)
-# print(y_predict.shape) # (1087, 96, 9)
-
-
-
-
-
-
-
-'''
-#RMSE, R2
-from sklearn.metrics import mean_squared_error
-def RMSE(y_test, y_predict):
-    return np.sqrt(mean_squared_error(y_test, y_predict))
-print('RMSE: ', RMSE(y, y_predict))
-
-from sklearn.metrics import r2_score
-R2 = r2_score(y, y_predict)
-print('R2: ', R2)
-
-'''
