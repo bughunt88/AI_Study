@@ -131,16 +131,16 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv1D
 def mymodel():
     model = Sequential()
-    model.add(Conv1D(256,2,padding = 'same', activation = 'relu',input_shape = (day,6)))
-    model.add(Conv1D(128,2,padding = 'same', activation = 'relu'))
-    model.add(Conv1D(64,2,padding = 'same', activation = 'relu'))
-    model.add(Conv1D(32,2,padding = 'same', activation = 'relu'))
+    model.add(Conv1D(256,2,padding = 'same', activation = 'swish',input_shape = (day,6)))
+    model.add(Conv1D(128,2,padding = 'same', activation = 'swish'))
+    model.add(Conv1D(64,2,padding = 'same', activation = 'swish'))
+    model.add(Conv1D(32,2,padding = 'same', activation = 'swish'))
     model.add(Flatten())
-    model.add(Dense(128, activation = 'relu'))
-    model.add(Dense(64, activation = 'relu'))
-    model.add(Dense(32, activation = 'relu'))
-    model.add(Dense(16, activation = 'relu'))
-    model.add(Dense(8, activation = 'relu'))
+    model.add(Dense(128, activation = 'swish'))
+    model.add(Dense(64, activation = 'swish'))
+    model.add(Dense(32, activation = 'swish'))
+    model.add(Dense(16, activation = 'swish'))
+    model.add(Dense(8, activation = 'swish'))
     model.add(Dense(1))
     return model
 
