@@ -133,6 +133,7 @@ def mymodel():
     model = Sequential()
     model.add(Conv1D(256,2,padding = 'same', activation = 'swish',input_shape = (day,6)))
     model.add(Conv1D(128,2,padding = 'same', activation = 'swish'))
+    model.add(Conv1D(128,2,padding = 'same', activation = 'swish'))
     model.add(Conv1D(64,2,padding = 'same', activation = 'swish'))
     model.add(Conv1D(32,2,padding = 'same', activation = 'swish'))
     model.add(Flatten())
@@ -141,6 +142,7 @@ def mymodel():
     model.add(Dense(32, activation = 'swish'))
     model.add(Dense(16, activation = 'swish'))
     model.add(Dense(8, activation = 'swish'))
+    model.add(Dense(4, activation = 'swish'))
     model.add(Dense(1))
     return model
 
@@ -152,7 +154,7 @@ bs = 64
 
 for i in range(48):
     # 시계열이라면 셔플을 안해야 시계열이지 않을까?
-    x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x[i],y1[i],y2[i], train_size = 0.7,shuffle = False, random_state = 0)
+    x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x[i],y1[i],y2[i], train_size = 0.7,shuffle = True, random_state = 0)
     # 타겟 1
     for j in quantiles:
         model = mymodel()
