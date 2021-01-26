@@ -59,7 +59,7 @@ def preprocess_data(data, is_train = True):
     data.insert(1,'T-Td',data['T']-data['Td'])
 
     temp = data.copy()
-    temp = temp[['TARGET','GHI','DHI','DNI','T-Td','RH','T']]
+    temp = temp[['TARGET','GHI','T-Td','RH']]
 
     if is_train == True:
         temp['TARGET1'] = temp['TARGET'].shift(-48).fillna(method = 'ffill')
@@ -69,7 +69,7 @@ def preprocess_data(data, is_train = True):
         return temp.iloc[:-96]
 
     elif is_train == False:
-        temp = temp[['TARGET','GHI','DHI','DNI','T-Td','RH','T']]
+        temp = temp[['TARGET','GHI','T-Td','RH']]
 
         return temp.iloc[-48:, :]
 
@@ -138,7 +138,7 @@ print(y1.shape)
 print(y2.shape)
 
 from sklearn.model_selection import train_test_split as tts
-x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x,y1,y2, train_size = 0.7,shuffle = True, random_state = 0)
+x_train, x_val, y1_train, y1_val, y2_train, y2_val = tts(x,y1,y2, train_size = 0.7, shuffle = True, random_state = 0)
 
 def quantile_loss(q, y_true, y_pred):
     err = (y_true - y_pred)
@@ -157,17 +157,18 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropou
 def mymodel():
 
     model = Sequential()
-    model.add(Conv1D(256,2,padding = 'same', activation = 'swish',input_shape = (1,7)))
+    model.add(Conv1D(256,2,padding = 'same', activation = 'swish',input_shape = (1,4)))
     model.add(Conv1D(128,2,padding = 'same', activation = 'swish'))
     model.add(Conv1D(64,2,padding = 'same', activation = 'swish'))
     model.add(Conv1D(32,2,padding = 'same', activation = 'swish'))
     model.add(Flatten())
     model.add(Dense(128, activation = 'swish'))
-    model.add(BatchNormalization())
     model.add(Dense(64, activation = 'swish'))
     model.add(Dense(32, activation = 'swish'))
-    model.add(Dense(16, activation = 'relu'))
-    model.add(Dense(8, activation = 'relu'))
+    model.add(Dense(16, activation = 'swish'))
+    model.add(Dense(8, activation = 'swish'))
+    model.add(Dense(4, activation = 'swish'))
+    model.add(Dense(2, activation = 'swish'))
     model.add(Dense(1))
 
     return model
@@ -176,7 +177,7 @@ def mymodel():
 #3. 컴파일 훈련
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 es = EarlyStopping(monitor = 'val_loss', patience = 10)
-lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.3, verbose = 1)
+lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.02, verbose = 1)
 epochs = 300
 bs = 16
 
@@ -215,4 +216,4 @@ num_temp2 = df_temp2.to_numpy()
 submission.loc[submission.id.str.contains("Day8"), "q_0.1":] = num_temp2
         
 #submission.to_csv('/content/drive/My Drive/solar/value/test_value_ver1.csv', index = False)
-submission.to_csv('../data/solar/value/test_ver1.csv', index = False)
+submission.to_csv('../data/solar/value/model6.csv', index = False)

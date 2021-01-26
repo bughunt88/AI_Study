@@ -1,13 +1,4 @@
 
-# 해볼 것 
-
-# 1. 댄스모델로 해볼 것 
-# 유튜브에 잘 나온다던 모델로 변경해볼것 
-
-# 2. 데이터 배열을 바꿔서 해볼 것
-
-
-
 import numpy as np
 import pandas as pd
 import tensorflow.keras.backend as K

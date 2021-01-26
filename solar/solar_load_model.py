@@ -146,7 +146,7 @@ for i in range(48):
     print(f'{int(i/2)}시 {i%2*30}분 시간대 진행중...')
     # 내일!
     for j in quantiles:
-        filepath_cp = f'../data/solar/modelcheckpoint/2/dacon_07_{i:2d}_y1seq_{j:.1f}.hdf5'
+        filepath_cp = f'../data/solar/modelcheckpoint/7/dacon_07_{i:2d}_y1seq_{j:.1f}.hdf5'
         model = load_model(filepath_cp, compile = False)
         model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
         x = []
@@ -164,7 +164,7 @@ for i in range(48):
 
     # 모레!
     for j in quantiles:
-        filepath_cp = f'../data/solar/modelcheckpoint/2/dacon_07_{i:2d}_y2seq_{j:.1f}.hdf5'
+        filepath_cp = f'../data/solar/modelcheckpoint/7/dacon_07_{i:2d}_y2seq_{j:.1f}.hdf5'
         model = load_model(filepath_cp, compile = False)
         model.compile(loss = lambda y_true,y_pred: quantile_loss(j,y_true,y_pred), optimizer = 'adam', metrics = [lambda y,y_pred: quantile_loss(j,y,y_pred)])
         x = []
@@ -180,4 +180,6 @@ for i in range(48):
         elif i%2 == 1:
             submission.loc[submission.id.str.contains(f"Day8_{int(i/2)}h30m"), [f"q_{j:.1f}"]] = num_temp2
 
-submission.to_csv('../data/solar/value/model4.csv', index = False)
+submission.to_csv('../data/solar/value/model9.csv', index = False)
+
+
