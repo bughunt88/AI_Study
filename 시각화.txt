@@ -1,0 +1,34 @@
+
+####시각화
+import matplotlib.pyplot as plt
+plt.figure(figsize=(10,6)) #가로세로
+plt.subplot(2,1,1)   #서브면 2,1,1이면 2행 1열 중에 1번째라는 뜻
+plt.plot(hist.history['loss'], marker='.', c='red', label='loss')
+plt.plot(hist.history['val_loss'], marker='.', c='blue', label='val_loss')
+plt.grid() #바탕을 grid모눈종이로 하겠다
+
+#plt.title('손실비용')
+plt.title('val_loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(loc='upper right')
+
+import matplotlib.pyplot as plt
+plt.subplot(2,1,2)   #2행 1열 중에 2번째라는 뜻
+plt.plot(hist.history['acc'], marker='.', c='red', label='acc')
+plt.plot(hist.history['val_acc'], marker='.', c='blue', label='val_acc')
+plt.grid()
+
+#plt.title('정확도')
+plt.title('accuracy')
+plt.ylabel('acc')
+plt.xlabel('epoch')
+plt.legend(loc='upper right')
+plt.show()
+
+
+
+# 컬럼의 분포를 볼 수 있는 코드 
+plt.scatter(x,y)
+plt.plot(x,y_pred, color='red')
+plt.show()
