@@ -1,4 +1,7 @@
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
+
+from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -10,7 +13,7 @@ dataset = load_diabetes()
 x_train,x_test,y_train,y_test = train_test_split(dataset.data,dataset.target,train_size = 0.8, random_state = 33)
 
 #2. 모델
-model = DecisionTreeRegressor(max_depth = 4)
+model = GradientBoostingRegressor()
 
 #3. 훈련
 model.fit(x_train, y_train)
@@ -56,7 +59,7 @@ new_data = np.transpose(new_data)
 x_train,x_test,y_train,y_test = train_test_split(new_data,dataset.target,train_size = 0.8, random_state = 33)
 
 #2. 모델
-model = DecisionTreeClassifier(max_depth = 4)
+model = GradientBoostingRegressor()
 
 #3. 훈련
 model.fit(x_train, y_train)

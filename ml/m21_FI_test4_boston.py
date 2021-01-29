@@ -42,8 +42,10 @@ print("############################################")
 # 위에 돌린 모델에서 feature_importances_에 값이 있는 것들만 추가 함 
 
 fi = model.feature_importances_
+
 new_data = []
 feature = []
+
 for i in range(len(fi)):
     if fi[i] != 0:
         new_data.append(dataset.data[:,i])
