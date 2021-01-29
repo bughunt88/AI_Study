@@ -28,7 +28,7 @@ model = LinearSVC()
 model.fit(x,y)
 
 
-for train_index, test_index in kfold.split(x):
+for train_index, test_index in kfold.split(x): 
     #print("TRAIN:", train_index, "TEST:", test_index)
 
     x_train, x_test = x[train_index], x[test_index]
@@ -38,9 +38,8 @@ for train_index, test_index in kfold.split(x):
 
 
 
-
-    
 score = cross_val_score(model,x_train,y_train, cv=kfold)
+
 
 print('scores : ', score)
 

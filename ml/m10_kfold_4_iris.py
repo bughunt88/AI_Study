@@ -30,7 +30,6 @@ for i in models:
     #3. compile fit
     #model.fit(x_train,y_train)
 
-    
     score = cross_val_score(model,x_train,y_train, cv=kfold)
 
     #4. evaluation, prediction
