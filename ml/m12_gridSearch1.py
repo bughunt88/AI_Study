@@ -67,6 +67,3 @@ print('최적의 매개변수 : ', model.best_estimator_)
 y_pred = model.predict(x_test)
 
 print('최종정답률 : ', accuracy_score(y_test,y_pred))
-
-
-print('모델정답률 : ', model.score(y_test,y_pred))
