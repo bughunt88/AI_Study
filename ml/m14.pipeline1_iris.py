@@ -39,7 +39,6 @@ x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, rando
 # 2. 모델 
 
 # model = Pipeline([ ("scaler", MinMaxScaler()), ('malddong', SVC()) ])
-
 model = make_pipeline(MinMaxScaler(), SVC())
 
 # SVC 라는 모델을 MinMaxScaler랑 합치는 코드 

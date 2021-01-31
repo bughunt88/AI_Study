@@ -49,7 +49,7 @@ for train_index, test_index in kfold.split(x) :
     model = Pipeline([("scaler", MinMaxScaler()), ('model', RandomForestClassifier())])
     
     score = cross_val_score(model, x_train, y_train, cv=kfold )
-    print('교차검증점수 : ', score)
+    print('교차검증 점수 : ', score)
 
 
 '''
@@ -63,6 +63,6 @@ model = GridSearchCV(pipe, parameters, cv=kfold)
 score = cross_val_score(model, x, y, cv=kfold)
 # cross_val_score 최적의 점수 찾는 것이 5번 
 
-print('교차검증 정수 : ', score)
+print('교차검증 점수 : ', score)
 
 '''

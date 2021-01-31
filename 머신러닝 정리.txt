@@ -1,0 +1,92 @@
+
+1. 머신러닝 분류 모델 전부를 검사하는 방법
+
+
+allAlgorithms = all_estimators(type_filter='classifier')
+
+for (name, algorithm) in allAlgorithms:
+
+    try:
+        model = algorithm()
+
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
+        print(name, "의 정답률 : ", accuracy_score(y_test, y_pred))
+    except:
+        # continue
+        print(name, '은 없는 놈!')
+
+
+
+2. 머신러닝 회기 모델 전부를 검사하는 방법
+
+
+allAlgorithms = all_estimators(type_filter='regressor')
+
+for (name, algorithm) in allAlgorithms:
+
+    try:
+        model = algorithm()
+
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
+        print(name, "의 정답률 : ", r2_score(y_test, y_pred))
+    except:
+        # continue
+        print(name, '은 없는 놈!')
+
+
+
+
+3. kfold 방식 (지정한 갯수만큼 데이터를 나눠주고 그 갯수만큼 데이터를 확인한다)
+
+
+kfold = KFold(n_splits=5, shuffle=True)
+
+
+- cross_val_score
+
+    score = cross_val_score(model,x,y, cv=kfold)
+
+    * n번의 훈련을 시켜서 모두 테스트 해준다
+    * 기본적으로 fit이 내장되어 있음
+
+
+
+- GridSearchCV
+
+    model = GridSearchCV(SVC(), parameters, cv=kfold)
+
+    * 지정한 모델에 들어가는 파라미터 값들의 최고값을 찾아주는 방식 
+
+print('최적의 매개변수 : ', model.best_estimator_)
+
+    * 파라미터 넣은 값들 중 최고만 골라서 알려준다 
+
+y_pred = model.predict(x_test)
+
+print('최종정답률 : ', accuracy_score(y_test,y_pred))
+
+    * 검증 값을 알려주는 코드 
+
+
+
+- RandomizedSearchCV
+
+    * GridSearchCV와 사용법은 같다
+    * GridSearchCV는 모든 파라미터를 확인하지만 RandomizedSearchCV는 일부 파라미터는 뺴고 확인한다
+    * GridSearchCV는 보다 속도가 빠르고 성능은 비슷하다!
+
+
+
+- Pipeline
+
+model = Pipeline([ ("scaler", MinMaxScaler()), ('malddong', SVC()) ])
+model = make_pipeline(MinMaxScaler(), SVC())
+
+    * 위 2가지 방식으로 사용한다 
+    * 모델에 데이터 전처리 방식을 합치도록 하는 코드!
+    * GridSearchCV, RandomizedSearchCV에 엮어서 사용할 수 있다 
+
+
+- 
