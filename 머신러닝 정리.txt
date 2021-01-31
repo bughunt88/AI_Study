@@ -1,5 +1,5 @@
 
-1. 머신러닝 분류 모델 전부를 검사하는 방법
+1. 머신러닝 분류 모델 전부를 검사하는 방법!
 
 
 allAlgorithms = all_estimators(type_filter='classifier')
@@ -18,7 +18,7 @@ for (name, algorithm) in allAlgorithms:
 
 
 
-2. 머신러닝 회기 모델 전부를 검사하는 방법
+2. 머신러닝 회기 모델 전부를 검사하는 방법!
 
 
 allAlgorithms = all_estimators(type_filter='regressor')
@@ -89,4 +89,10 @@ model = make_pipeline(MinMaxScaler(), SVC())
     * GridSearchCV, RandomizedSearchCV에 엮어서 사용할 수 있다 
 
 
-- 
+
+- feature_importances_
+
+print(model.feature_importances_)
+
+    * 데이터의 중요한 컬럼을 확인해주는 코드 
+    * 상관계수 구하는 식과 이것을 비교해서 데이터 컬럼 정제 할 것 

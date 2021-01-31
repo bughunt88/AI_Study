@@ -37,12 +37,7 @@ def plot_feature_importances_dataset(model):
 plot_feature_importances_dataset(model)
 plt.show()
 '''
-
-
 print("############################################")
-
-
-# 위에 돌린 모델에서 feature_importances_에 값이 있는 것들만 추가 함 
 
 fi = model.feature_importances_
 
@@ -70,7 +65,6 @@ acc = model.score(x_test,y_test)
 print(model.feature_importances_)
 print('acc : ', acc)
 
-####### dataset >> new_data 로 바꾸고 featurename 부분을 feature 리스트로 바꿔줌!!!
 def plot_feature_importances_dataset(model):
     n_features = new_data.shape[1]
     plt.barh(np.arange(n_features), model.feature_importances_, align = 'center')

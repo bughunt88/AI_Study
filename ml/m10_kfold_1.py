@@ -24,9 +24,6 @@ kfold = KFold(n_splits=5, shuffle=True)
 
 model = LinearSVC()
 
-model.fit(x,y)
-
-
 score = cross_val_score(model,x,y, cv=kfold)
 
 print('scores : ', score)

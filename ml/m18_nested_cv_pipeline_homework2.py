@@ -22,24 +22,14 @@ import  warnings
 warnings.filterwarnings('ignore')
 
 # 1. 데이터 
+
 dataset = load_wine()
 x = dataset.data
 y = dataset.target
 
-# x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, random_state = 77, shuffle=True ) 
-
 kfold = KFold(n_splits=5, shuffle=True)
 
-
-parameters = [
-    {'mal__n_estimators' : [100,200]},
-    {'mal__max_depth' : [6,8,10,12]},
-    {'mal__min_samples_leaf' : [3,5,7,10]},
-    {'mal__n_jobs' : [-1]}
-]
-
 # 2. 모델
-
 
 for train_index, test_index in kfold.split(x) :
 
@@ -50,19 +40,3 @@ for train_index, test_index in kfold.split(x) :
     
     score = cross_val_score(model, x_train, y_train, cv=kfold )
     print('교차검증 점수 : ', score)
-
-
-'''
-
-pipe = Pipeline([ ("scaler", MinMaxScaler()), ('mal', RandomForestClassifier()) ])
-#pipe = make_pipeline(n, RandomForestRegressor())
-
-model = GridSearchCV(pipe, parameters, cv=kfold)
-# GridSearchCV 최적의 값 찾는 것이 5번
-
-score = cross_val_score(model, x, y, cv=kfold)
-# cross_val_score 최적의 점수 찾는 것이 5번 
-
-print('교차검증 점수 : ', score)
-
-'''
