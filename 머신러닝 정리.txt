@@ -46,6 +46,7 @@ kfold = KFold(n_splits=5, shuffle=True)
 
 - cross_val_score
 
+
     score = cross_val_score(model,x,y, cv=kfold)
 
     * n번의 훈련을 시켜서 모두 테스트 해준다
@@ -54,6 +55,7 @@ kfold = KFold(n_splits=5, shuffle=True)
 
 
 - GridSearchCV
+
 
     model = GridSearchCV(SVC(), parameters, cv=kfold)
 
@@ -73,6 +75,7 @@ print('최종정답률 : ', accuracy_score(y_test,y_pred))
 
 - RandomizedSearchCV
 
+
     * GridSearchCV와 사용법은 같다
     * GridSearchCV는 모든 파라미터를 확인하지만 RandomizedSearchCV는 일부 파라미터는 뺴고 확인한다
     * GridSearchCV는 보다 속도가 빠르고 성능은 비슷하다!
@@ -80,6 +83,7 @@ print('최종정답률 : ', accuracy_score(y_test,y_pred))
 
 
 - Pipeline
+
 
 model = Pipeline([ ("scaler", MinMaxScaler()), ('malddong', SVC()) ])
 model = make_pipeline(MinMaxScaler(), SVC())
@@ -91,6 +95,7 @@ model = make_pipeline(MinMaxScaler(), SVC())
 
 
 - feature_importances_
+
 
 print(model.feature_importances_)
 
