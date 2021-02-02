@@ -36,53 +36,16 @@ x = x.to_numpy()
 y = y.to_numpy()
 x_pred = x_test.to_numpy()
 
-'''
-pca = PCA(n_components=400)
-x = pca.fit_transform(x)
-'''
+x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, random_state = 66 , shuffle=True)
+
+model = joblib.load('../data/vision/checkpoint/checkpoint4.dat')
+
+print("로드 완료!")
 
 
-# x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, random_state = 66 , shuffle=True)
+score = model.score(x_test, y_test)
 
-
-# 2. 모델
-
-kfold = KFold(n_splits=5, shuffle=True)
-
-
-model = XGBClassifier(base_score=0.5, booster='gbtree', colsample_bylevel=1,
-              colsample_bynode=1, colsample_bytree=1, eval_metric='mlogloss',
-              gamma=0, learning_rate=0.1, max_delta_step=0, max_depth=6,
-              min_child_weight=1, missing=None, n_estimators=5000, n_jobs=-1,
-              nthread=None, objective='multi:softprob', random_state=0,
-              reg_alpha=0, reg_lambda=1, scale_pos_weight=1, seed=None,
-              silent=None, subsample=1, verbosity=1)
-
-
-
-acc_list = []
-for train_index, test_index in kfold.split(x): 
-    #print("TRAIN:", train_index, "TEST:", test_index)
-
-    x_train, x_test = x[train_index], x[test_index]
-    y_train, y_test = y[train_index], y[test_index]
-
-    #3. 훈련
-    model.fit(x_train,y_train,verbose=True, eval_set=[(x_train,y_train),(x_test,y_test)])
-
-    #4. 평가 예측
-    acc = model.score(x_test,y_test)
-
-    acc_list.append(acc)
-
-    joblib.dump(model, '../data/vision/checkpoint/checkpoint'+str(len(acc_list))+'.dat')
-
-
-
-print(acc_list)
-
-
-'''
+print("score : ", score)
 
 y_pred = model.predict(x_pred)
 
@@ -90,9 +53,9 @@ pred = pd.DataFrame(y_pred)
 
 submission.loc[:, 'digit'] = pred
 
-submission.to_csv('../data/vision/file/test1.csv', index = False)
+submission.to_csv('../data/vision/file/submission.csv', index = False)
 
-'''
+
 
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
