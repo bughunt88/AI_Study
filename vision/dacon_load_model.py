@@ -38,7 +38,7 @@ x_pred = x_test.to_numpy()
 
 x_train, x_test, y_train, y_test = train_test_split(x, y,  train_size=0.7, random_state = 66 , shuffle=True)
 
-model = joblib.load('../data/vision/checkpoint/checkpoint4.dat')
+model = joblib.load('../data/vision/checkpoint/checkpoint2.dat')
 
 print("로드 완료!")
 
