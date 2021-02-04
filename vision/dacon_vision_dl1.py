@@ -12,7 +12,7 @@
 
 # swish로 돌려 봄 
 
-# 돌려야 함 
+# 미완!
 
 
 import numpy as np
@@ -135,7 +135,7 @@ for train_index, valid_index in skf.split(train2,train['digit']) :
     print(nth, '번째 학습을 완료했습니다.')
     
 sub['digit'] = result.argmax(1)
-sub.to_csv('../data/vision/file/submission4.csv', index = False)
+sub.to_csv('../data/vision/file/submission1.csv', index = False)
 
 
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
@@ -148,7 +148,4 @@ print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
 
-
-# submission4.csv
-# 0.9215686275	
 

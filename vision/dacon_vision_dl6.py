@@ -1,18 +1,8 @@
+# 진한 숫자만 나오도록 훈련 
+
+# 훈련 숫자를 늘려보기 
 
 
-# BatchNormalization 이랑 Drop out 이랑 같이 사용하지 않는다
-
-
-# 해볼 것 
-# 1. 리사이징 조금 크게 돌려보기 
-# 2. https://dacon.io/competitions/official/235626/codeshare/1624  숫자 얻기 해서 적용시켜보기
-# 3. 맥스폴링 뺴고 돌리기 
-# 4. swish 넣고 돌려보기 
-
-
-# batch_size=32
-
-# 완료! 제출 해보자!
 
 import numpy as np
 import pandas as pd
@@ -52,19 +42,19 @@ train2 = np.array(train2)
 test2 = np.array(test2)
 '''
 
-
 # data normalization
 train2 = train2/255.0
 test2 = test2/255.0
 
+threshold = 0.6
+train2[train2 < threshold] = 0
+test2[test2 < threshold] = 0
 
 # ImageDatagenerator & data augmentation
 idg = ImageDataGenerator(height_shift_range=(-1,1),width_shift_range=(-1,1))
 idg2 = ImageDataGenerator()
 
-
-n_splits_num = 8
-
+n_splits_num = 128
 
 # cross validation
 skf = StratifiedKFold(n_splits=n_splits_num, random_state=42, shuffle=True)
@@ -84,12 +74,11 @@ for train_index, test_index  in skf.split(train2,train['digit']) :
     x_test = train2[test_index]
     y_train = train['digit'][train_index]
     y_test = train['digit'][test_index]
-    
 
-    x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, train_size=0.8, shuffle=True, random_state=47)
+    x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, train_size=0.9, shuffle=True, random_state=47)
 
-    train_generator = idg.flow(x_train, y_train, batch_size=32)
-    test_generator = idg2.flow(x_test, y_test, batch_size=32)
+    train_generator = idg.flow(x_train, y_train, batch_size=8, seed=2020)
+    test_generator = idg2.flow(x_test, y_test)
     valid_generator = idg2.flow(x_valid, y_valid)
     pred_generator = idg2.flow(test2, shuffle=False)
     
@@ -106,11 +95,13 @@ for train_index, test_index  in skf.split(train2,train['digit']) :
     model.add(BatchNormalization())
     model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
     model.add(BatchNormalization())
+    model.add(MaxPooling2D(2,2))
     
     model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
     model.add(BatchNormalization())
     model.add(Conv2D(64,(5,5),activation='relu',padding='same')) 
     model.add(BatchNormalization())
+    model.add(MaxPooling2D(2,2))
 
     model.add(Flatten())
 
@@ -144,7 +135,7 @@ for train_index, test_index  in skf.split(train2,train['digit']) :
     
 
 sub['digit'] = result.argmax(1)
-sub.to_csv('../data/vision/file/submission.csv', index = False)
+sub.to_csv('../data/vision/file/submission5.csv', index = False)
 
 
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')

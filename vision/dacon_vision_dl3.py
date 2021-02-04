@@ -7,12 +7,12 @@
 # 1. 리사이징 조금 크게 돌려보기 
 # 2. https://dacon.io/competitions/official/235626/codeshare/1624  숫자 얻기 해서 적용시켜보기
 # 3. 맥스폴링 뺴고 돌리기 
-# 4. swish 넣고 돌려보기 
+# 4. relu 넣고 돌려보기 
 
 
 # batch_size=32
 
-# 완료! 제출 해보자!
+# 미완!
 
 import numpy as np
 import pandas as pd
@@ -63,7 +63,7 @@ idg = ImageDataGenerator(height_shift_range=(-1,1),width_shift_range=(-1,1))
 idg2 = ImageDataGenerator()
 
 
-n_splits_num = 8
+n_splits_num = 32
 
 
 # cross validation
@@ -88,8 +88,8 @@ for train_index, test_index  in skf.split(train2,train['digit']) :
 
     x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, train_size=0.8, shuffle=True, random_state=47)
 
-    train_generator = idg.flow(x_train, y_train, batch_size=32)
-    test_generator = idg2.flow(x_test, y_test, batch_size=32)
+    train_generator = idg.flow(x_train, y_train, batch_size=64)
+    test_generator = idg2.flow(x_test, y_test, batch_size=64)
     valid_generator = idg2.flow(x_valid, y_valid)
     pred_generator = idg2.flow(test2, shuffle=False)
     
@@ -144,7 +144,7 @@ for train_index, test_index  in skf.split(train2,train['digit']) :
     
 
 sub['digit'] = result.argmax(1)
-sub.to_csv('../data/vision/file/submission.csv', index = False)
+sub.to_csv('../data/vision/file/submission3.csv', index = False)
 
 
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
