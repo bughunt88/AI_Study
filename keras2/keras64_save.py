@@ -69,10 +69,15 @@ search.fit(x_train,y_train, verbose=1)
 
 print("#################################")
 
+
 search.best_estimator_.model.save('../data/h5/k64_modelbest.h5')
 # 모델 세이브 위치!!!!!
 # 모델 로드하고 스코어는 사용불가! 
 # predict로 점수 낼 것 
+
+# model6 = load_model('../data/h5/k64_modelbest.h5')
+# y_predict = model6.predict(x_test)
+
 
 print(search.best_params_)
 

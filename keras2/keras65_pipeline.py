@@ -41,7 +41,7 @@ def create_hyperparameters():
     batches = [10,20,30,40,50]
     optimizers = ['rmsprop', 'adam', 'adadelta']
     dropout = [0.1,0.2,0.3]
-    return {'batch_size': batches, "optimizer":optimizers, "drop":dropout}
+    return {'kerasclassifier__batch_size': batches, "kerasclassifier__optimizer":optimizers, "kerasclassifier__drop":dropout}
 
 hyperparameters = create_hyperparameters()
 model2 = bulid_model()
@@ -52,13 +52,14 @@ model2 = bulid_model()
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import make_pipeline
 
-model2 = make_pipeline(MinMaxScaler(), model2)
-# 파이프 라인 위치!!!!
-
 
 
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 model2 = KerasClassifier(build_fn=bulid_model, verbose=1)
+
+model2 = make_pipeline(MinMaxScaler(), model2)
+# make_pipeline, pipeline 둥 다 사용가능!
+
 
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
@@ -66,8 +67,9 @@ search = RandomizedSearchCV(model2, hyperparameters, cv=3)
 # search = GridSearchCV(model2, hyperparameters, cv=3)
 
 
-search.fit(x_train,y_train, verbose=1)
-
+search.fit(x_train,y_train)
+# 파이프 라인은 verbose=1 같은 다른 파라미터를 사용할 수 없다!
+# 이전 KerasClassifier에서 처리해서 넘길 것
 
 print("#################################")
 
