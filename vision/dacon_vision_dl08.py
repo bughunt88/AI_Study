@@ -81,7 +81,9 @@ for train_index, test_index  in skf.split(train2,train['digit']) :
     
     dropout_rate=0.5
     model_in = Input(shape = (28,28,1))
-    x = Conv2D(32, 3, padding='same', kernel_initializer='he_normal')(model_in) # kernel_initializer : 레이어의 초기 난수 가중치를 설정하는 방식
+    x = Conv2D(32, 3, padding='same', kernel_initializer='he_normal')(model_in) 
+    # kernel_initializer : 레이어의 초기 난수 가중치를 설정하는 방식
+    # he_normal : 0을 중심으로 stddev = sqrt(2 / fan_in)의 표준편차를 가진 절단된 정규분포에 따라 샘플이 생성
     x = BatchNormalization()(x)
     x_res = x
     x = Activation('relu')(x)
@@ -179,7 +181,7 @@ for train_index, test_index  in skf.split(train2,train['digit']) :
     
 
 sub['digit'] = result.argmax(1)
-sub.to_csv('../data/vision/file/submission7.csv', index = False)
+sub.to_csv('../data/vision/file/submission8.csv', index = False)
 
 
 print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')

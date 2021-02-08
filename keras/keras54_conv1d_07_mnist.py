@@ -30,7 +30,6 @@ from tensorflow.keras.layers import MaxPooling1D, Dense, Flatten, Dropout,LSTM, 
 
 model = Sequential()
 model.add(Conv1D(filters=100, kernel_size=(2), padding='same', input_shape=(28,28)))
-model.add(MaxPooling1D(pool_size=2))
 model.add(Conv1D(100,  kernel_size=(2)) )
 model.add(Conv1D(50,  kernel_size=(2)) )
 model.add(Conv1D(10,  kernel_size=(2)) )
