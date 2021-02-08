@@ -48,16 +48,10 @@ def create_hyperparameters():
 hyperparameters = create_hyperparameters()
 model2 = bulid_model()
 
-model2.save('../data/h5/k64_model.h5')
-# 모델 세이브 위치!!!!!
-
-
-model3 = load_model('../data/h5/k64_model.h5')
-# 모델 로드 
-
 
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 model2 = KerasClassifier(build_fn=bulid_model, verbose=1)
+
 
 
 import pickle
@@ -71,10 +65,14 @@ model4 = pickle.load(open('../data/xgb_save/keras64.pickle.dat', 'rb'))
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 search = RandomizedSearchCV(model2, hyperparameters, cv=3)
 
-
 search.fit(x_train,y_train, verbose=1)
 
 print("#################################")
+
+search.best_estimator_.model.save('../data/h5/k64_modelbest.h5')
+# 모델 세이브 위치!!!!!
+# 모델 로드하고 스코어는 사용불가! 
+# predict로 점수 낼 것 
 
 print(search.best_params_)
 
