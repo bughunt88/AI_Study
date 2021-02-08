@@ -14,19 +14,20 @@ from PIL import Image
 # y값을 찾는것이 목표
 
 
+
 img=[]
 for i in range(50000):
-    filepath='/Users/bughunt/Downloads/2차 배포/dirty_mnist_2nd/%05d.png'%i
+    filepath='../data/vision2/dirty_mnist_2nd/%05d.png'%i
     image=Image.open(filepath)
     image_data=asarray(image)
     img.append(image_data)
 
 
-np.save('/Users/bughunt/Downloads/2차 배포/test.npy', arr=img)
+np.save('../data/vision2/train_data.npy', arr=img)
 
-img_ch_np=np.load('/Users/bughunt/Downloads/2차 배포/test.npy')
+# img_ch_np=np.load('../data/vision2/test.npy')
 
 
 print("끝")
 
-print(img_ch_np.shape)
+#print(img_ch_np.shape)

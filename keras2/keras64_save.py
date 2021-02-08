@@ -52,8 +52,6 @@ model2 = bulid_model()
 from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 model2 = KerasClassifier(build_fn=bulid_model, verbose=1)
 
-
-
 import pickle
 pickle.dump(model2, open('../data/xgb_save/keras64.pickle.dat', 'wb'))
 # 피클 위치!!!!!
