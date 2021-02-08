@@ -19,7 +19,7 @@ alphabets = list(alphabets)
 
 # train 데이터
 
-train = pd.read_csv('../data/vision2/mnist_data/train.csv')
+# train = pd.read_csv('../data/vision2/mnist_data/train.csv')
 
 
 
@@ -33,6 +33,7 @@ train = pd.read_csv('../data/vision2/mnist_data/train.csv')
 # 1회에 쓰던 mnist 데이터 A를 모아서 256으로 리사이징 해준다 
 # 알파벳 별로 모델을 만들 것!
 
+'''
 train2 = train.drop(['id','digit'],1)
 
 train2['y_train'] = 1
@@ -49,7 +50,13 @@ x_train[x_train < 100] = 0
 
 x_train = x_train.reshape(-1,28,28,1)
 x_train = experimental.preprocessing.Resizing(256,256)(x_train)
+'''
 
+x_train = np.load('../data/vision2/x_data_save.npy')
+y_train = np.load('../data/vision2/y_data_save.npy')
+
+print(x_train.shape)
+print(x_train[0])
 
 # test 데이터
 # 이번 대회에 주어진 50000개를 test 데이터로 사용해 정확한 모델을 만든다
@@ -59,6 +66,7 @@ x_train = experimental.preprocessing.Resizing(256,256)(x_train)
 # x_data = np.load('/content/drive/My Drive/mnist/train_data.npy')
 # y_data = pd.read_csv('/content/drive/My Drive/mnist/dirty_mnist_2nd_answer.csv')
 
+'''
 # 컴터 데이터 
 x_data = np.load('../data/vision2/train_data.npy')
 y_data = pd.read_csv('../data/vision2/dirty_mnist_2nd_answer.csv')
@@ -71,6 +79,7 @@ x_data = x_data.reshape(-1,256,256,1)
 x_data[x_data < 253] = 0
 
 x_test = x_data/255.0
+'''
 x_train = x_train/255.0
 
 # ImageDataGenerator의 값은 더 찾아볼 것!
@@ -88,7 +97,7 @@ idg2 = ImageDataGenerator()
 
 
 train_generator = idg.flow(x_train, y_train, batch_size=32, seed=2020)
-test_generator = idg2.flow(x_test, y_test)
+# test_generator = idg2.flow(x_test, y_test)
 
 model = Sequential()
 
@@ -126,12 +135,12 @@ model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.002,epsilon=None),
 
 learning_history = model.fit_generator(train_generator,epochs=200)
 
-
+'''
 #4. Evaluate, Predict
 loss, acc = model.evaluate(test_generator)
 print("loss : ", loss)
 print("acc : ", acc)
-
+'''
 
 
 
