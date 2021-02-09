@@ -113,7 +113,7 @@ y_predict = model.predict_generator(xy_train[0][0], verbose=True)
 
 print(np.where(y_predict> 0.5, 1, 0))
 
-
+# male_female(fit_generator)
 # loss :  1.7091652154922485
 # acc :  0.7373272180557251
 

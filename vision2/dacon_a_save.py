@@ -21,7 +21,6 @@ alphabets = list(alphabets)
 train = pd.read_csv('../data/vision2/mnist_data/train.csv')
 
 
-
 # 256, 256 이미지를 돌리면 터진다 
 # 안 터지도록 수정을 해야함 
 # test 데이터가 50000만개가 필요할까??
@@ -49,7 +48,7 @@ x_train[x_train < 100] = 0
 x_train = x_train.reshape(-1,28,28,1)
 x_train = experimental.preprocessing.Resizing(256,256)(x_train)
 
-
+'''
 np.save('../data/vision2/x_data_save.npy', arr=x_train)
 np.save('../data/vision2/y_data_save.npy', arr=y_train)
-
+'''

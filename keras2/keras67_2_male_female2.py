@@ -5,7 +5,7 @@
 import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
+from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, BatchNormalization
 
 '''
 train_datagen = ImageDataGenerator(
@@ -60,20 +60,21 @@ y_test = np.load('../data/image/brain/numpy/keras67_test_y.npy')
 
 
 model = Sequential()
-
-model.add(Conv2D(filters = 32, kernel_size=(3,3), input_shape =(150,150,3), activation= 'relu'))
-model.add(Conv2D(filters = 16, kernel_size=(2,2), activation= 'relu'))
-model.add(Conv2D(filters = 16, kernel_size=(2,2),  activation= 'relu'))
-model.add(Conv2D(filters = 32, kernel_size=(2,2),  activation= 'relu'))
-model.add(Conv2D(filters = 32, kernel_size=(3,3),  activation= 'relu'))
-model.add(MaxPooling2D(2,2))
-model.add(Conv2D(filters = 64, kernel_size=(2,2),  activation= 'relu'))
-model.add(Conv2D(filters = 64, kernel_size=(3,3),  activation= 'relu'))
-model.add(MaxPooling2D(2,2))
+model.add(Conv2D(32, 3, padding='same', activation='relu', input_shape=(150,150,3)))
+model.add(BatchNormalization())
+model.add(Conv2D(64,3, activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(64,3, activation='relu'))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(3))
+model.add(Conv2D(32,3, activation='relu'))
+model.add(BatchNormalization())
 model.add(Flatten())
-model.add(Dense(128, activation= 'relu'))
-model.add(Dense(64, activation= 'relu'))
-model.add(Dense(1, activation= 'sigmoid'))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(1,activation='sigmoid'))
+
 
 
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -83,7 +84,11 @@ lr = ReduceLROnPlateau(monitor='val_loss', patience=60, factor=0.5)
 model.compile(loss = 'binary_crossentropy', optimizer= 'adam', metrics=['acc'])
 history = model.fit(x_train,y_train, epochs=500, validation_data=(x_test,y_test),
 callbacks=[es,lr])
-# steps_per_epoch=32 => 32개에 대한 데이터를 1에포에 대해서 32번만 학습?
 
 loss=model.evaluate(x_test,y_test, batch_size=16)
 print(loss)
+
+
+# male_female(fit)
+# loss :  2.4603981971740723
+# acc :  0.5898617506027222

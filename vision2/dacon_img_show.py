@@ -18,10 +18,9 @@ import string
 x_data = np.load('../data/vision2/train_data1.npy')
 x_data = x_data.reshape(-1,256,256,1)
 
-x_data = experimental.preprocessing.Resizing(128,128)(x_data)
+x_data = experimental.preprocessing.Resizing(64,64)(x_data)
 
 print(x_data.shape)
-
 
 plt.figure(figsize=(20, 5))
 ax = plt.subplot(2, 10, 1)
@@ -31,7 +30,6 @@ plt.imshow(x_data[0])
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 plt.show()
-
 
 '''
 train = pd.read_csv('../data/vision2/mnist_data/train.csv')
@@ -56,8 +54,10 @@ y_train = a_train.to_numpy()[:,-1] # (72, 1)
 
 # 이미지 전처리 100보다 큰 것은 253으로 변환, 100보다 작으면 0으로 변환
 
+
 x_train[100 < x_train] = 253
 x_train[x_train < 100] = 0
+
 
 x = x_train.reshape(-1,28,28,1)
 x = experimental.preprocessing.Resizing(128,128)(x)
@@ -70,5 +70,4 @@ plt.imshow(x[0])
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 plt.show()
-
 '''
