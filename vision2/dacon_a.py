@@ -21,8 +21,6 @@ alphabets = list(alphabets)
 
 train = pd.read_csv('../data/vision2/mnist_data/train.csv')
 
-
-
 # 256, 256 이미지를 돌리면 터진다 
 # 안 터지도록 수정을 해야함 
 # test 데이터가 50000만개가 필요할까??
@@ -48,7 +46,7 @@ x_train[100 < x_train] = 253
 x_train[x_train < 100] = 0
 
 x_train = x_train.reshape(-1,28,28,1)
-x_train = experimental.preprocessing.Resizing(256,256)(x_train)
+x_train = experimental.preprocessing.Resizing(128,128)(x_train)
 
 
 # test 데이터
@@ -66,6 +64,8 @@ y_data = pd.read_csv('../data/vision2/dirty_mnist_2nd_answer.csv')
 y_test = y_data.to_numpy()[:,1] 
 
 x_data = x_data.reshape(-1,256,256,1)
+x_data = experimental.preprocessing.Resizing(128,128)(x_data)
+x_data = x_data.numpy().astype('int32')
 
 # 이미지 전처리 253 보다 낮은 것은 0으로 변환 (위에서 253으로 지정했기 때문에 253 이상으로)
 x_data[x_data < 253] = 0
@@ -74,10 +74,17 @@ x_test = x_data/255.0
 x_train = x_train/255.0
 
 # ImageDataGenerator의 값은 더 찾아볼 것!
-idg = ImageDataGenerator( width_shift_range=(-1,1),
-    height_shift_range=(-1,1),
-    zoom_range=0.15,
-    rotation_range = 10)
+idg = ImageDataGenerator( 
+    
+    horizontal_flip=True, # 수평 뒤집기 
+    vertical_flip=True, # 수직 뒤집기 
+    width_shift_range=0.1, # 수평 이동
+    height_shift_range=0.1, # 수직 이동
+    rotation_range=5, # 회전 
+    zoom_range=1.2, # 확대
+    shear_range=0.7 # 층 밀리기 강도?
+    
+    )
 idg2 = ImageDataGenerator()
 
 
@@ -86,13 +93,12 @@ idg2 = ImageDataGenerator()
 # 각 알파벳 별로 0,1을 뽑는다 !!!
 
 
-
-train_generator = idg.flow(x_train, y_train, batch_size=32, seed=2020)
+train_generator = idg.flow(x_train, y_train, batch_size=2, seed=2020)
 test_generator = idg2.flow(x_test, y_test)
 
 model = Sequential()
 
-model.add(Conv2D(16,(3,3),activation='relu',input_shape=(256,256,1),padding='same'))
+model.add(Conv2D(16,(3,3),activation='relu',input_shape=(128,128,1),padding='same'))
 model.add(BatchNormalization())
 
 model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
@@ -124,7 +130,7 @@ model.add(Dense(1,activation='sigmoid'))
 
 model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.002,epsilon=None),metrics=['acc'])
 
-learning_history = model.fit_generator(train_generator,epochs=200)
+learning_history = model.fit_generator(train_generator,epochs=1000)
 
 
 #4. Evaluate, Predict
