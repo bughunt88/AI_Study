@@ -60,7 +60,7 @@ x_train[100 < x_train] = 253
 x_train[x_train < 100] = 0
 
 x = x_train.reshape(-1,28,28,1)
-
+x = experimental.preprocessing.Resizing(128,128)(x)
 
 plt.figure(figsize=(20, 5))
 ax = plt.subplot(2, 10, 1)

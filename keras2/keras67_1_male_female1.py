@@ -32,6 +32,7 @@ xy_train = train_datagen.flow_from_directory(
     class_mode='binary',
     subset='training'
 )
+
 xy_val = train_datagen.flow_from_directory(
     '../data/image/sex',
     target_size=(150,150),
@@ -67,7 +68,7 @@ es = EarlyStopping(monitor = 'val_loss', patience = 20)
 lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.5, verbose = 1)
 filepath = 'c:/data/modelcheckpoint/keras62_1_checkpoint_{val_loss:.4f}-{epoch:02d}.hdf5'
 cp = ModelCheckpoint(filepath, save_best_only=True, monitor = 'val_loss')
-history = model.fit_generator(xy_train, steps_per_epoch=93, epochs=500, validation_data=xy_val, validation_steps=31,
+history = model.fit_generator(xy_train, steps_per_epoch=93, epochs=500,  validation_steps=31,
 callbacks=[es])
 
 
@@ -99,6 +100,10 @@ plt.title('loss')
 plt.show()
 '''
 
+loss, acc = model.evaluate(xy_val)
+print("loss : ", loss)
+print("acc : ", acc)
+
 print("y 값")
 print(xy_train[0][1])
 print("y 계산 값")
@@ -108,8 +113,12 @@ y_predict = model.predict_generator(xy_train[0][0], verbose=True)
 
 print(np.where(y_predict> 0.5, 1, 0))
 
-acc = history.history['acc']
 
-print("acc 값")
-print(acc)
+# loss :  1.7091652154922485
+# acc :  0.7373272180557251
 
+# y 값
+# [1. 1. 1. 1. 0. 0. 0. 1. 1. 1. 1. 1. 0. 1.]
+
+# y 계산 값
+# [[1][1][1][1][0][0][0][1][1][1][1][1][0][1]]

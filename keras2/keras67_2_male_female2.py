@@ -2,116 +2,88 @@
 # 남자 여자 구별
 # ImageDataGenerator의 fit 사용해서 완성
 
-
 import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Conv2D, Dropout, BatchNormalization, MaxPooling2D, Flatten
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
 
-
+'''
 train_datagen = ImageDataGenerator(
     rescale=1./255,
-    # horizontal_flip=True,
-    # vertical_flip=True,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
-    # rotation_range=5,
-    # zoom_range=1.2,
-    # shear_range=0.7,
-    fill_mode='nearest',
+    horizontal_flip = True,
+    vertical_flip= True,
+    width_shift_range=(-1,1),
+    height_shift_range=(-1,1),
+    rotation_range= 5,
+    zoom_range= 0.5,
+    shear_range= 0.7,
+    fill_mode = 'nearest',   
     validation_split=0.2505
-)
-test_datagen = ImageDataGenerator(rescale=1./255)
+ )
 
-# flow 또는 flow_from_directory
+test_datagen = ImageDataGenerator(rescale=1./255)   #test data는 따로 튜닝하지 않고 전처리만 해준다.
 
-# train_generator
+
+
 xy_train = train_datagen.flow_from_directory(
-    '../data/image/sex',
-    target_size=(150,150),
-    batch_size=2000,
-    class_mode='binary',
-    subset='training'
+     '../data/image/sex/',        
+     target_size = (150,150),
+     batch_size= 3000,  
+     class_mode='binary', 
+     subset = 'training'
+
+ )
+
+xy_test = train_datagen.flow_from_directory(
+     '../data/image/sex/',       
+     target_size = (150,150),
+     batch_size= 3000,
+     class_mode='binary', 
+     subset = 'validation'
 )
-xy_val = train_datagen.flow_from_directory(
-    '../data/image/sex',
-    target_size=(150,150),
-    batch_size=2000,
-    class_mode='binary',
-    subset='validation'
-)
-# Found 1389 images belonging to 2 classes.
-# Found 347 images belonging to 2 classes.
+
+
 print(xy_train[0][0].shape) # (14, 150, 150, 3)
 print(xy_train[0][1].shape) # (14,)
 
-
-
-count = 0
-for image, label in xy_train:
-    count += 1
-    print(count)
-
-
+np.save('../data/image/brain/numpy/keras67_train_x.npy', arr=xy_train[0][0])
+np.save('../data/image/brain/numpy/keras67_train_y.npy', arr=xy_train[0][1])
+np.save('../data/image/brain/numpy/keras67_test_x.npy', arr=xy_test[0][0])
+np.save('../data/image/brain/numpy/keras67_test_y.npy', arr=xy_test[0][1])
 
 '''
+
+x_train = np.load('../data/image/brain/numpy/keras67_train_x.npy')
+y_train = np.load('../data/image/brain/numpy/keras67_train_y.npy')
+x_test = np.load('../data/image/brain/numpy/keras67_test_x.npy')
+y_test = np.load('../data/image/brain/numpy/keras67_test_y.npy')
+
 
 model = Sequential()
-model.add(Conv2D(32, 3, padding='same', activation='relu', input_shape=(150,150,3)))
-model.add(BatchNormalization())
-model.add(Conv2D(64,3, activation='relu'))
-model.add(BatchNormalization())
-model.add(Conv2D(64,3, activation='relu'))
-model.add(BatchNormalization())
-model.add(MaxPooling2D(3))
-model.add(Conv2D(32,3, activation='relu'))
-model.add(BatchNormalization())
+
+model.add(Conv2D(filters = 32, kernel_size=(3,3), input_shape =(150,150,3), activation= 'relu'))
+model.add(Conv2D(filters = 16, kernel_size=(2,2), activation= 'relu'))
+model.add(Conv2D(filters = 16, kernel_size=(2,2),  activation= 'relu'))
+model.add(Conv2D(filters = 32, kernel_size=(2,2),  activation= 'relu'))
+model.add(Conv2D(filters = 32, kernel_size=(3,3),  activation= 'relu'))
+model.add(MaxPooling2D(2,2))
+model.add(Conv2D(filters = 64, kernel_size=(2,2),  activation= 'relu'))
+model.add(Conv2D(filters = 64, kernel_size=(3,3),  activation= 'relu'))
+model.add(MaxPooling2D(2,2))
 model.add(Flatten())
-model.add(Dense(64, activation='relu'))
-model.add(Dense(32, activation='relu'))
-model.add(Dense(16, activation='relu'))
-model.add(Dense(1,activation='sigmoid'))
-
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['acc'])
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
-es = EarlyStopping(monitor = 'val_loss', patience = 20)
-lr = ReduceLROnPlateau(monitor = 'val_loss', patience = 5, factor = 0.5, verbose = 1)
-filepath = 'c:/data/modelcheckpoint/keras62_1_checkpoint_{val_loss:.4f}-{epoch:02d}.hdf5'
-cp = ModelCheckpoint(filepath, save_best_only=True, monitor = 'val_loss')
-history = model.fit_generator(xy_train, steps_per_epoch=93, epochs=500, validation_data=xy_val, validation_steps=31,
-callbacks=[es])
+model.add(Dense(128, activation= 'relu'))
+model.add(Dense(64, activation= 'relu'))
+model.add(Dense(1, activation= 'sigmoid'))
 
 
-acc = history.history['acc']
-val_acc = history.history['val_acc']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-import matplotlib.pyplot as plt
-epochs = len(acc)
-x_axis = range(0,epochs)
+es = EarlyStopping(monitor= 'val_loss', patience=120)
+lr = ReduceLROnPlateau(monitor='val_loss', patience=60, factor=0.5)
+model.compile(loss = 'binary_crossentropy', optimizer= 'adam', metrics=['acc'])
+history = model.fit(x_train,y_train, epochs=500, validation_data=(x_test,y_test),
+callbacks=[es,lr])
+# steps_per_epoch=32 => 32개에 대한 데이터를 1에포에 대해서 32번만 학습?
 
-fig, ax = plt.subplots()
-ax.plot(x_axis, acc, label='train')
-ax.plot(x_axis, val_acc, label='val')
-ax.legend()
-plt.ylabel('acc')
-plt.title('acc')
-# plt.show()
-
-
-fig, ax = plt.subplots()
-ax.plot(x_axis, loss, label='train')
-ax.plot(x_axis, val_loss, label='val')
-ax.legend()
-plt.ylabel('loss')
-plt.title('loss')
-plt.show()
-
-
-print("y 값")
-print(xy_train[0][1])
-print("y 계산 값")
-print(model.predict_generator(xy_train[0][0], verbose=True).argmax(axis=1))
-
-'''
+loss=model.evaluate(x_test,y_test, batch_size=16)
+print(loss)

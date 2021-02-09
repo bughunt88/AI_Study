@@ -19,24 +19,26 @@ alphabets = list(alphabets)
 
 # train 데이터
 
-train = pd.read_csv('../data/vision2/mnist_data/train.csv')
+train = pd.read_csv('../data/vision2/mnist_data/test.csv')
 
-# 256, 256 이미지를 돌리면 터진다 
-# 안 터지도록 수정을 해야함 
-# test 데이터가 50000만개가 필요할까??
+
+# train 데이터를 test로 변경하자
 
 
 
 # train 데이터 
-# 1회에 쓰던 mnist 데이터 A를 모아서 256으로 리사이징 해준다 
+# 1회에 쓰던 mnist 데이터 A를 모아서 128으로 리사이징 해준다 
 # 알파벳 별로 모델을 만들 것!
 
-train2 = train.drop(['id','digit'],1)
 
-train2['y_train'] = 1
+train['y_train'] = 1
 
-a_train = train2.loc[train2['letter']=='A']
-a_train = a_train.drop(['letter'],1)
+a_train = train.loc[train['letter']=='A']
+#
+# a_train = a_train.drop(['id','digit','letter'],1)
+# y데이터 
+# a_train = a_train.drop(['id','letter'],1)
+
 
 x_train = a_train.to_numpy().astype('int32')[:,:-1] # (72, 784)
 y_train = a_train.to_numpy()[:,-1] # (72, 1)
@@ -46,14 +48,20 @@ x_train[100 < x_train] = 253
 x_train[x_train < 100] = 0
 
 x_train = x_train.reshape(-1,28,28,1)
+
+# 128로 리사이징 
 x_train = experimental.preprocessing.Resizing(128,128)(x_train)
+
+
+
+
 
 
 # test 데이터
 # 이번 대회에 주어진 50000개를 test 데이터로 사용해 정확한 모델을 만든다
 
 
-# 데이콘 데이터 
+# 코랩 데이터 
 # x_data = np.load('/content/drive/My Drive/mnist/train_data.npy')
 # y_data = pd.read_csv('/content/drive/My Drive/mnist/dirty_mnist_2nd_answer.csv')
 
@@ -64,6 +72,8 @@ y_data = pd.read_csv('../data/vision2/dirty_mnist_2nd_answer.csv')
 y_test = y_data.to_numpy()[:,1] 
 
 x_data = x_data.reshape(-1,256,256,1)
+
+# 128로 리사이징 
 x_data = experimental.preprocessing.Resizing(128,128)(x_data)
 x_data = x_data.numpy().astype('int32')
 
@@ -80,9 +90,8 @@ idg = ImageDataGenerator(
     vertical_flip=True, # 수직 뒤집기 
     width_shift_range=0.1, # 수평 이동
     height_shift_range=0.1, # 수직 이동
-    rotation_range=5, # 회전 
-    zoom_range=1.2, # 확대
-    shear_range=0.7 # 층 밀리기 강도?
+    rotation_range=60, # 회전 
+    zoom_range=[0.2,2] # 확대
     
     )
 idg2 = ImageDataGenerator()
