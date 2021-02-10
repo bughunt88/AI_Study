@@ -11,6 +11,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.optimizers import Adam
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 import string
+from tensorflow.keras.models import load_model
 
 
 
@@ -38,31 +39,27 @@ alphabets = list(alphabets)
 
 
 # train 데이터 (1회 대회 train, test 데이터에서 끌어온다)
-train = pd.read_csv('../data/vision2/mnist_data/test.csv')
-train_a = pd.read_csv('../data/vision2/mnist_data/train.csv')
-
+train_a = pd.read_csv('../data/vision2/mnist_data/test.csv')
+train = pd.read_csv('../data/vision2/mnist_data/train.csv')
 
 # *********************
 # train 데이터 
 # 1회에 쓰던 mnist 데이터 A를 모아서 128으로 리사이징 해준다 
 # 알파벳 별로 모델을 만들 것!
+
 tmp1 = pd.DataFrame()
 
-train['y_train'] = 1
-train_a['y_train'] = 1
+train = train.drop(['id','digit'],1)
+train_a = train_a.drop(['id'],1)
 
-a_train = train.loc[train['letter']=='A']
-a_train1 = train_a.loc[train_a['letter']=='A']
+tmp1 = pd.concat([train,train_a])
 
-
-a_train1 = a_train1.drop(['id','digit','letter'],1)
-a_train = a_train.drop(['id','letter'],1)
+tmp1.loc[tmp1['letter']!='A','letter'] = 0
+tmp1.loc[tmp1['letter']=='A','letter'] = 1
 
 
-tmp1 = pd.concat([a_train,a_train1])
-
-x_train = tmp1.to_numpy().astype('int32')[:,:-1] # (852, 784)
-y_train = tmp1.to_numpy()[:,-1] # (852,)
+x_train = tmp1.to_numpy().astype('int32')[:,1:] # (852, 784)
+y_train = tmp1.to_numpy().astype('int32')[:,0] # (852,)
 
 
 # 이미지 전처리 100보다 큰 것은 254으로 변환, 100보다 작으면 0으로 변환
@@ -71,14 +68,13 @@ x_train[x_train < 100] = 0
 
 x_train = x_train.reshape(-1,28,28,1)
 
-# 발리데이션이 필요 없다
-# from sklearn.model_selection import train_test_split
-# x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  train_size=0.7, random_state = 66 ) # shuffle False면 섞는다
+
+from sklearn.model_selection import train_test_split
+x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  train_size=0.7, random_state = 66 ) # shuffle False면 섞는다
 
 # 128로 리사이징 
 x_train = experimental.preprocessing.Resizing(128,128)(x_train)
-#x_val = experimental.preprocessing.Resizing(128,128)(x_val)
-
+x_val = experimental.preprocessing.Resizing(128,128)(x_val)
 
 
 # *********************
@@ -88,7 +84,7 @@ x_train = experimental.preprocessing.Resizing(128,128)(x_train)
 
 # 코랩 데이터 
 # x_data = np.load('/content/drive/My Drive/mnist/train_data.npy')
-# y_data = pd.read_csv('/content/drive/My Drive/mnist/dirty_mnist_2nd_answer.csv')
+# y_data = pd.read_csv('/content/drive/My Drive/mnist/dirty_mnist_2nd_answaer.csv')
 
 # 컴터 데이터 
 x_data = np.load('../data/vision2/train_data.npy')
@@ -104,6 +100,7 @@ x_data = x_data.astype('int32')
 
 x_test = x_data/255.0
 x_train = x_train/255.0
+x_val = x_val/255.0
 
 # ImageDataGenerator의 값은 더 찾아볼 것!
 idg = ImageDataGenerator( 
@@ -125,12 +122,13 @@ idg2 = ImageDataGenerator()
 # 각 알파벳 별로 0,1을 뽑는다 !!!
 
 
-
-
-
-train_generator = idg.flow(x_train, y_train, batch_size=16, seed=2020)
+train_generator = idg.flow(x_train, y_train, batch_size=32, seed=2020)
 test_generator = idg2.flow(x_test, y_test)
-# val_generator = idg2.flow(x_val, y_val)
+val_generator = idg2.flow(x_val, y_val)
+
+
+
+
 
 model = Sequential()
 
@@ -164,11 +162,18 @@ model.add(BatchNormalization())
 model.add(Dense(1,activation='sigmoid'))
 
 
+# model = load_model('../data/vision2/cp/dacon_a.h5', compile = False)
+
 model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.002,epsilon=None),metrics=['acc'])
 
-learning_history = model.fit_generator(train_generator, epochs=100)
+learning_history = model.fit_generator(train_generator, epochs=100, validation_data=val_generator)
 
 model.save('../data/vision2/cp/dacon_a.h5')
+
+
+
+
+
 
 
 loss, acc = model.evaluate(test_generator)
@@ -188,13 +193,12 @@ print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
 
 
 
-
-
 x_pred = np.load('../data/vision2/predict_data.npy')
 
-# x_pred = x_pred[2]
 
 x_pred = x_pred.reshape(-1,128,128,1)
+print(x_pred.shape)
+
 
 x_pred = x_pred/255.0
 
@@ -205,8 +209,13 @@ y_predict = model.predict_generator(pred_generator, verbose=True)
 print("결과!!!!!!!!!!!!")
 print(y_predict)
 
+
+'''
+
 sub = pd.read_csv('../data/vision2/sample_submission.csv')
 
 sub['a'] = y_predict
 
 sub.to_csv('../data/vision2/file/submission1.csv', index = False)
+
+'''
