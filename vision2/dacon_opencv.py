@@ -1,48 +1,30 @@
-import numpy as np
-import PIL
-from numpy import asarray
-from PIL import Image
-
-import matplotlib.pyplot as plt
 import cv2
+import numpy as np
+from matplotlib import pyplot as plt
 
+image_path = '../data/vision2/test_dirty_mnist_2nd/50001.png'
 
-# 사진만 가능하나?? 
-# 변환하면 모두 검정색으로 나온다
+plt.figure(figsize=(12,6))
+image = cv2.imread(image_path) # cv2.IMREAD_GRAYSCALE
+image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+print(image.shape)
+#img = cv2.imshow('original', image)
+#cv2.waitKey(0)
 
+#254보다 작고 0이아니면 0으로 만들어주기
+image2 = np.where((image <= 254) & (image != 0), 0, image)
+#cv2.imshow('filterd', image2)
 
-for i in range(1) :
-    
-    image_bgr = cv2.imread('../data/vision2/dirty_mnist_2nd/00000.png')
-    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+image3 = cv2.dilate(image2, kernel=np.ones((2, 2), np.uint8), iterations=1)
+#cv2.imshow('dilate', image3)
+#dilate -> 이미지 팽창
+image4 = cv2.medianBlur(src=image3, ksize= 5)  #점처럼 놓여있는  noise들을 제거할수있음
 
+image = cv2.resize(image4, (128, 128))
 
-    # 사각형 좌표: 시작점의 x,y  ,height, weight
-    rectangle = (20, 20, 256, 256)
+print(image.shape)
 
-    # 초기 마스크 생성
-    mask = np.zeros(image_rgb.shape[:2], np.uint8)
+cv2.imshow('median', image)
+#medianBlur->커널 내의 필터중 밝기를 줄세워서 중간에 있는 값으로 현재 픽셀 값을 대체
 
-    # grabCut에 사용할 임시 배열 생성
-    bgdModel = np.zeros((1, 65), np.float64)
-    fgdModel = np.zeros((1, 65), np.float64)
-
-    # grabCut 실행
-    cv2.grabCut(image_rgb, # 원본 이미지
-            mask,       # 마스크
-            rectangle,  # 사각형
-            bgdModel,   # 배경을 위한 임시 배열
-            fgdModel,   # 전경을 위한 임시 배열 
-            5,          # 반복 횟수
-            cv2.GC_INIT_WITH_RECT) # 사각형을 위한 초기화
-
-
-    # 배경인 곳은 0, 그 외에는 1로 설정한 마스크 생성
-    mask_2 = np.where((mask==2) | (mask==0), 0, 1).astype('uint8')
-
-    # 이미지에 새로운 마스크를 곱행 배경을 제외
-    image_rgb_nobg = image_rgb * mask_2[:, :, np.newaxis]
-    cv2.imwrite('../data/vision2/dirty_mnist_2nd/00000_re.png',image_rgb_nobg)
-    # plot
-    # plt.imshow(image_rgb_nobg)
-    # plt.show()
+cv2.waitKey(0) #cv2 실행
