@@ -122,7 +122,7 @@ idg2 = ImageDataGenerator()
 # 각 알파벳 별로 0,1을 뽑는다 !!!
 
 
-train_generator = idg.flow(x_train, y_train, batch_size=32, seed=2020)
+train_generator = idg.flow(x_train, y_train, batch_size=8, seed=2020)
 test_generator = idg2.flow(x_test, y_test)
 val_generator = idg2.flow(x_val, y_val)
 
@@ -166,14 +166,14 @@ model.add(Dense(1,activation='sigmoid'))
 
 model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.002,epsilon=None),metrics=['acc'])
 
-learning_history = model.fit_generator(train_generator, epochs=100, validation_data=val_generator)
 
-model.save('../data/vision2/cp/dacon_a.h5')
+reLR = ReduceLROnPlateau(patience=100,verbose=1,factor=0.5) #learning rate scheduler
+es = EarlyStopping(patience=160, verbose=1)
+mc = ModelCheckpoint('../data/vision2/cp/best_cvision.h5',save_best_only=True, verbose=1)
 
+learning_history = model.fit_generator(train_generator, epochs=2000, validation_data=val_generator , callbacks=[es,mc,reLR])
 
-
-
-
+#model.save('../data/vision2/cp/dacon_a.h5')
 
 
 loss, acc = model.evaluate(test_generator)
