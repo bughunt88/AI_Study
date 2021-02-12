@@ -29,7 +29,9 @@ from tensorflow.keras.models import load_model
 
 # 문제 발생 
 
-# 훈련 데이터의 값을 1로만 
+# 이진 분류로 y값을 0,1로 주었는데 
+# 결과는 왜? 다르게 나오는가??
+
 
 
 '''
@@ -116,16 +118,10 @@ idg = ImageDataGenerator(
 idg2 = ImageDataGenerator()
 
 
-# *********************
-# predict 데이터 넣을 예정
-# test_dirty_mnist_2nd 5000개를 x_predict로 사용
-# 각 알파벳 별로 0,1을 뽑는다 !!!
-
-
+# 이미지 증폭
 train_generator = idg.flow(x_train, y_train, batch_size=8, seed=2020)
 test_generator = idg2.flow(x_test, y_test)
 val_generator = idg2.flow(x_val, y_val)
-
 
 
 
@@ -134,6 +130,7 @@ model = Sequential()
 
 model.add(Conv2D(16,(3,3),activation='relu',input_shape=(128,128,1),padding='same'))
 model.add(BatchNormalization())
+model.add(MaxPooling2D(2,2))
 
 model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
 model.add(BatchNormalization())
@@ -159,13 +156,13 @@ model.add(BatchNormalization())
 model.add(Dense(64,activation='relu'))
 model.add(BatchNormalization())
 
+model.add(Dense(32,activation='relu'))
+model.add(BatchNormalization())
+
 model.add(Dense(1,activation='sigmoid'))
 
 
-# model = load_model('../data/vision2/cp/dacon_a.h5', compile = False)
-
 model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.002,epsilon=None),metrics=['acc'])
-
 
 reLR = ReduceLROnPlateau(patience=100,verbose=1,factor=0.5) #learning rate scheduler
 es = EarlyStopping(patience=160, verbose=1)
@@ -173,8 +170,13 @@ mc = ModelCheckpoint('../data/vision2/cp/best_cvision.h5',save_best_only=True, v
 
 learning_history = model.fit_generator(train_generator, epochs=2000, validation_data=val_generator , callbacks=[es,mc,reLR])
 
-#model.save('../data/vision2/cp/dacon_a.h5')
+model.save('../data/vision2/cp/dacon_a.h5')
 
+'''
+model = load_model('../data/vision2/cp/dacon_a.h5', compile = False)
+
+model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.002,epsilon=None),metrics=['acc'])
+'''
 
 loss, acc = model.evaluate(test_generator)
 print("loss : ", loss)
@@ -193,8 +195,9 @@ print('(ง˙∇˙)ว {오늘 안에 조지고만다!!!]')
 
 
 
-x_pred = np.load('../data/vision2/predict_data.npy')
 
+
+x_pred = np.load('../data/vision2/predict_data.npy')
 
 x_pred = x_pred.reshape(-1,128,128,1)
 print(x_pred.shape)
@@ -210,7 +213,6 @@ print("결과!!!!!!!!!!!!")
 print(y_predict)
 
 
-'''
 
 sub = pd.read_csv('../data/vision2/sample_submission.csv')
 
@@ -218,4 +220,3 @@ sub['a'] = y_predict
 
 sub.to_csv('../data/vision2/file/submission1.csv', index = False)
 
-'''
