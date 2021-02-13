@@ -31,7 +31,10 @@ from tensorflow.keras.models import load_model
 
 # 이진 분류로 y값을 0,1로 주었는데 
 # 결과는 왜? 다르게 나오는가??
+# 결과가 너무 안나온다 !!!!!!!!!!!!!!!!!!!!!!!!
 
+# 전처리는 cv2로 했다고 생각 함
+# 모델을 수정해보자
 
 
 '''
@@ -140,13 +143,13 @@ model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
 model.add(BatchNormalization())
 model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
 model.add(BatchNormalization())
-model.add(MaxPooling2D(2,2))
+# model.add(MaxPooling2D(2,2))
 
 model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
 model.add(BatchNormalization())
 model.add(Conv2D(64,(5,5),activation='relu',padding='same')) 
 model.add(BatchNormalization())
-model.add(MaxPooling2D(2,2))
+# model.add(MaxPooling2D(2,2))
 
 model.add(Flatten())
 
@@ -216,7 +219,7 @@ print(y_predict)
 
 sub = pd.read_csv('../data/vision2/sample_submission.csv')
 
-sub['a'] = y_predict
+sub['a'] = np.where(y_predict> 0.5, 1, 0)
 
-sub.to_csv('../data/vision2/file/submission1.csv', index = False)
+sub.to_csv('../data/vision2/file/submission2.csv', index = False)
 
