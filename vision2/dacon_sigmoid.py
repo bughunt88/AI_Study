@@ -114,8 +114,8 @@ idg = ImageDataGenerator(
     vertical_flip=True, # 수직 뒤집기 
     #width_shift_range=0.1, # 수평 이동
     #height_shift_range=0.1, # 수직 이동
-    rotation_range=60, # 회전 
-    zoom_range=[0.2,2] # 확대
+    rotation_range=90, # 회전 
+    zoom_range=[0.1,1] # 확대
     
     )
 idg2 = ImageDataGenerator()
