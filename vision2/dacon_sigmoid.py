@@ -115,7 +115,7 @@ idg = ImageDataGenerator(
     #width_shift_range=0.1, # 수평 이동
     #height_shift_range=0.1, # 수직 이동
     rotation_range=90, # 회전 
-    zoom_range=[0.1,1] # 확대
+    zoom_range=[-1,0.1] # 확대
     
     )
 idg2 = ImageDataGenerator()
@@ -137,29 +137,22 @@ model.add(MaxPooling2D(2,2))
 
 model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
 model.add(BatchNormalization())
-model.add(Conv2D(32,(5,5),activation='relu',padding='same')) 
-model.add(BatchNormalization())
-model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
-model.add(BatchNormalization())
-model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
+# model.add(MaxPooling2D(2,2))
+model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
 model.add(BatchNormalization())
 # model.add(MaxPooling2D(2,2))
-
 model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
 model.add(BatchNormalization())
-model.add(Conv2D(64,(5,5),activation='relu',padding='same')) 
+#model.add(MaxPooling2D(2,2))
+model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
 model.add(BatchNormalization())
-# model.add(MaxPooling2D(2,2))
-
+#model.add(MaxPooling2D(2,2))
 model.add(Flatten())
 
 model.add(Dense(128,activation='relu'))
 model.add(BatchNormalization())
  
 model.add(Dense(64,activation='relu'))
-model.add(BatchNormalization())
-
-model.add(Dense(32,activation='relu'))
 model.add(BatchNormalization())
 
 model.add(Dense(1,activation='sigmoid'))
