@@ -25,19 +25,33 @@ testset = []
 pad1d = lambda a, i: a[0: i] if a.shape[0] > i else np.hstack((a, np.zeros(i-a.shape[0])))
 pad2d = lambda a, i: a[:, 0:i] if a.shape[1] > i else np.hstack((a, np.zeros((a.shape[0], i-a.shape[1]))))
 
+min_level_db = -100
+ 
+def _normalize(S):
+    return np.clip((S - min_level_db) / -min_level_db, 0, 1)
+
+
+
 TRAIN_DATA_DIR = '../data/project/train/'
 TEST_DATA_DIR = '../data/project/test/'
 
 DIR_List = ['angry/','nomal/','sad/']
 
 for index, d_list in enumerate(DIR_List):
-    # 0 - 화남 
+
+    print(index)
+
     for filename in os.listdir(TRAIN_DATA_DIR+d_list):
         filename = normalize('NFC', filename)
         try:
             wav, sr = librosa.load(TRAIN_DATA_DIR + d_list + filename)
             
+            #mfcc = librosa.feature.mfcc(wav)
             mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+
+            S_1 = librosa.power_to_db(mfcc, ref=np.max)
+            mfcc = _normalize(S_1)
+
             mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
             padded_mfcc = pad2d(mfcc, 40)
 
@@ -47,14 +61,25 @@ for index, d_list in enumerate(DIR_List):
             print(filename, e)
             raise
 
+
+
+
+
 for index, d_list in enumerate(DIR_List):
-    # 0 - 화남 
+    
+    print(index)
+
     for filename in os.listdir(TEST_DATA_DIR+d_list):
         filename = normalize('NFC', filename)
         try:
             wav, sr = librosa.load(TEST_DATA_DIR + d_list + filename)
             
+            #mfcc = librosa.feature.mfcc(wav)
             mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+
+            S_1 = librosa.power_to_db(mfcc, ref=np.max)
+            mfcc = _normalize(S_1)
+
             mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
             padded_mfcc = pad2d(mfcc, 40)
 
@@ -70,6 +95,8 @@ for index, d_list in enumerate(DIR_List):
 random.shuffle(trainset)
 random.shuffle(testset)
 
+'''
 np.save('../data/project/train_data.npy', arr=trainset)
 np.save('../data/project/test_data.npy', arr=testset)
+'''
 

@@ -47,8 +47,6 @@ hyperparameters = create_hyperparameters()
 model2 = bulid_model()
 
 
-
-
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import make_pipeline
 

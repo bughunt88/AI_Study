@@ -37,9 +37,6 @@ test_y = []
 pad1d = lambda a, i: a[0: i] if a.shape[0] > i else np.hstack((a, np.zeros(i-a.shape[0])))
 pad2d = lambda a, i: a[:, 0:i] if a.shape[1] > i else np.hstack((a, np.zeros((a.shape[0], i-a.shape[1]))))
 
-frame_length = 0.025
-frame_stride = 0.0010
-
 train_mfccs = [a for (a,b) in trainset]
 train_y = [b for (a,b) in trainset]
 
@@ -67,21 +64,39 @@ x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_si
 
 
 ip = Input(shape=train_X_ex[0].shape)
-
+'''
 m = Conv2D(32, kernel_size=(4,4), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
+m = BatchNormalization(axis=-1)(m)
 
 m = Conv2D(32*2, kernel_size=(4,4), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
+m = BatchNormalization(axis=-1)(m)
 
 m = Conv2D(32*3, kernel_size=(4,4), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
+m = BatchNormalization(axis=-1)(m)
 
 m = Flatten()(m)
+'''
+
+m = LSTM(32, activation='relu')(ip)
+m = BatchNormalization()(m)
 
 m = Dense(64, activation='relu')(m)
+m = BatchNormalization()(m)
+
+m = Dense(64, activation='relu')(m)
+m = BatchNormalization()(m)
 
 m = Dense(32, activation='relu')(m)
+m = BatchNormalization()(m)
+
+m = Dense(16, activation='relu')(m)
+m = BatchNormalization()(m)
+
+m = Dense(8, activation='relu')(m)
+m = BatchNormalization()(m)
 
 op = Dense(3, activation='softmax')(m)
 
@@ -112,15 +127,23 @@ print('loss : ',loss)
 print('acc : ',acc)
 
 
+min_level_db = -100
+ 
+def _normalize(S):
+    return np.clip((S - min_level_db) / -min_level_db, 0, 1)
+
+
 DATA_DIR = '../data/project/predict/'
 
-Predict_list = ['predict_a','predict_n','predict_s']
+for filename in os.listdir(DATA_DIR):
+    filename = normalize('NFC', filename)
 
-
-for p_list in Predict_list:
-
-    wav, sr = librosa.load(DATA_DIR + p_list +'.m4a')
+    wav, sr = librosa.load(DATA_DIR + filename)
     mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+
+    S_1 = librosa.power_to_db(mfcc, ref=np.max)
+    mfcc = _normalize(S_1)
+
     mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
     padded_mfcc = pad2d(mfcc, 40)
     padded_mfcc= np.expand_dims(padded_mfcc, 0)
@@ -128,6 +151,9 @@ for p_list in Predict_list:
     y_pred = model.predict(padded_mfcc)
     
     y_predict=np.argmax(y_pred, axis=1)
+    print('파일 명 : ',filename)
     print('예측값 : ', y_predict)
 
-# 0 - 화남, 1 - 평상시, 2 - 슬픔 
+# 101~150 평상시 - 1
+# 251~300 분노 - 0
+# 301~350 슬픔 - 2
