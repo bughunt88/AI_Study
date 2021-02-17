@@ -15,6 +15,7 @@ from keras.utils import to_categorical
 from keras.layers import Dense, TimeDistributed, Dropout, Bidirectional, GRU, BatchNormalization, Activation, LeakyReLU, LSTM, Flatten, RepeatVector, Permute, Multiply, Conv2D, MaxPooling2D
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import EarlyStopping,ReduceLROnPlateau
+from keras import Sequential
 
 import warnings
 
@@ -60,35 +61,42 @@ test_X_ex = np.expand_dims(test_mfccs, -1)
 print('train X shape:', train_X_ex.shape)
 print('test X shape:', test_X_ex.shape)
 
-x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_size=0.8, random_state = 66 ) 
+x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_size=0.7, random_state = 66 ) 
+
+print(train_X_ex[0].shape)
 
 
-ip = Input(shape=train_X_ex[0].shape)
+model = Sequential()
 
+model.add(Conv2D(16,(3,3),activation='relu',input_shape=train_X_ex[0].shape,padding='same'))
+model.add(BatchNormalization())
 
-m = Conv2D(32, kernel_size=(2,2), activation='relu')(ip)
-m = MaxPooling2D(pool_size=(4,4))(m)
-m = BatchNormalization(axis=-1)(m)
+model.add(Conv2D(32,(3,3),activation='relu',padding='same'))
+model.add(BatchNormalization())
+model.add(Conv2D(32,(5,5),activation='relu',padding='same')) 
+model.add(BatchNormalization())
+model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
+model.add(BatchNormalization())
+model.add(Conv2D(32,(5,5),activation='relu',padding='same'))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(2,2))
+    
+model.add(Conv2D(64,(3,3),activation='relu',padding='same'))
+model.add(BatchNormalization())
+model.add(Conv2D(64,(5,5),activation='relu',padding='same')) 
+model.add(BatchNormalization())
+model.add(MaxPooling2D(2,2))
 
-m = Conv2D(32*2, kernel_size=(2,2), activation='relu')(ip)
-m = MaxPooling2D(pool_size=(4,4))(m)
-m = BatchNormalization(axis=-1)(m)
+model.add(Flatten())
 
-m = Conv2D(32*3, kernel_size=(2,2), activation='relu')(ip)
-m = MaxPooling2D(pool_size=(4,4))(m)
-m = BatchNormalization(axis=-1)(m)
+model.add(Dense(128,activation='relu'))
+model.add(BatchNormalization())
+ 
+model.add(Dense(64,activation='relu'))
+model.add(BatchNormalization())
 
-m = Flatten()(m)
-
-m = Dense(64, activation='relu')(m)
-
-m = Dense(32, activation='relu')(m)
-
-op = Dense(3, activation='softmax')(m)
-
-
-
-model = Model(ip, op)
+model.add(Dense(3,activation='softmax'))
+    
 
 
 model.compile(loss='categorical_crossentropy',
@@ -96,7 +104,7 @@ model.compile(loss='categorical_crossentropy',
               metrics=['accuracy'])
 
 
-eraly_stopping = EarlyStopping(monitor='loss', patience=20, mode='auto') # mode는 min,max,auto 있다
+eraly_stopping = EarlyStopping(monitor='loss', patience=10, mode='auto') # mode는 min,max,auto 있다
 reLR = ReduceLROnPlateau(patience=5,verbose=1,factor=0.5) #learning rate scheduler
 
 history = model.fit(x_train,
@@ -121,26 +129,22 @@ def _normalize(S):
     return np.clip((S - min_level_db) / -min_level_db, 0, 1)
 
 
-print(x_train.shape)
-print(y_train.shape)
-
-
 DATA_DIR = '../data/project/predict/'
 
 for filename in os.listdir(DATA_DIR):
     filename = normalize('NFC', filename)
 
     wav, sr = librosa.load(DATA_DIR + filename)
-    mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=160)
+    mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
 
-    #S_1 = librosa.power_to_db(mfcc, ref=np.max)
-    #mfcc = _normalize(S_1)
+    S_1 = librosa.power_to_db(mfcc, ref=np.max)
+    mfcc = _normalize(S_1)
 
     mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
-    padded_mfcc = pad2d(mfcc, 240)
+    padded_mfcc = pad2d(mfcc, 40)
     padded_mfcc= np.expand_dims(padded_mfcc, 0)
-
-    #librosa.display.specshow(padded_mfcc, sr=16000, x_axis='time')
+    #train X shape: (864, 100, 40, 1)
+    print(padded_mfcc.shape)
 
     y_pred = model.predict(padded_mfcc)
     

@@ -65,7 +65,6 @@ x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_si
 
 ip = Input(shape=train_X_ex[0].shape)
 
-
 m = Conv2D(32, kernel_size=(2,2), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
@@ -78,6 +77,10 @@ m = Conv2D(32*3, kernel_size=(2,2), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
 
+m = Conv2D(32*4, kernel_size=(2,2), activation='relu')(ip)
+m = MaxPooling2D(pool_size=(4,4))(m)
+m = BatchNormalization(axis=-1)(m)
+
 m = Flatten()(m)
 
 m = Dense(64, activation='relu')(m)
@@ -85,8 +88,6 @@ m = Dense(64, activation='relu')(m)
 m = Dense(32, activation='relu')(m)
 
 op = Dense(3, activation='softmax')(m)
-
-
 
 model = Model(ip, op)
 
@@ -145,6 +146,15 @@ for filename in os.listdir(DATA_DIR):
     y_pred = model.predict(padded_mfcc)
     
     y_predict=np.argmax(y_pred, axis=1)
+
+    if y_predict == 0:
+        y_predict = '분노'
+    elif y_predict == 1:
+        y_predict = '평상시'
+    elif y_predict == 2:
+        y_predict = '슬픔'
+
+
     print('파일 명 : ',filename)
     print('예측값 : ', y_predict)
 

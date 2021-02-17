@@ -93,10 +93,8 @@ m = Dense(32, activation='relu')(m)
 m = BatchNormalization()(m)
 
 m = Dense(16, activation='relu')(m)
-m = BatchNormalization()(m)
 
 m = Dense(8, activation='relu')(m)
-m = BatchNormalization()(m)
 
 op = Dense(3, activation='softmax')(m)
 
