@@ -60,11 +60,24 @@ test_X_ex = np.expand_dims(test_mfccs, -1)
 print('train X shape:', train_X_ex.shape)
 print('test X shape:', test_X_ex.shape)
 
-x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_size=0.8, random_state = 66 ) 
 
+print(train_X_ex[0].shape)
+
+x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_size=0.8, random_state = 66 ) 
 
 ip = Input(shape=train_X_ex[0].shape)
 
+m = Conv2D(2, kernel_size=(2,2), activation='relu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(4, kernel_size=(2,2), activation='relu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(8, kernel_size=(2,2), activation='relu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(16, kernel_size=(2,2), activation='relu')(ip)
+m = BatchNormalization(axis=-1)(m)
 
 m = Conv2D(32, kernel_size=(2,2), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
@@ -78,6 +91,7 @@ m = Conv2D(32*3, kernel_size=(2,2), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
 
+
 m = Flatten()(m)
 
 m = Dense(64, activation='relu')(m)
@@ -85,8 +99,6 @@ m = Dense(64, activation='relu')(m)
 m = Dense(32, activation='relu')(m)
 
 op = Dense(3, activation='softmax')(m)
-
-
 
 model = Model(ip, op)
 
@@ -131,13 +143,14 @@ for filename in os.listdir(DATA_DIR):
     filename = normalize('NFC', filename)
 
     wav, sr = librosa.load(DATA_DIR + filename)
-    mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=160)
+    mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
+    #mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
 
     #S_1 = librosa.power_to_db(mfcc, ref=np.max)
     #mfcc = _normalize(S_1)
 
     mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
-    padded_mfcc = pad2d(mfcc, 240)
+    padded_mfcc = pad2d(mfcc, 650)
     padded_mfcc= np.expand_dims(padded_mfcc, 0)
 
     #librosa.display.specshow(padded_mfcc, sr=16000, x_axis='time')
@@ -145,9 +158,24 @@ for filename in os.listdir(DATA_DIR):
     y_pred = model.predict(padded_mfcc)
     
     y_predict=np.argmax(y_pred, axis=1)
+
+    if y_predict == 0:
+        y_predict = '분노'
+    elif y_predict == 1:
+        y_predict = '평상시'
+    elif y_predict == 2:
+        y_predict = '슬픔'
+
+
     print('파일 명 : ',filename)
     print('예측값 : ', y_predict)
 
 # 101~150 평상시 - 1
 # 251~300 분노 - 0
 # 301~350 슬픔 - 2
+
+
+'''
+loss :  1.6047866344451904
+acc :  0.7803468108177185
+'''

@@ -65,27 +65,34 @@ x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_si
 
 ip = Input(shape=train_X_ex[0].shape)
 
-m = Conv2D(32, kernel_size=(2,2), activation='relu')(ip)
+m = Conv2D(2, kernel_size=(2,2), activation='elu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(4, kernel_size=(2,2), activation='elu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(8, kernel_size=(2,2), activation='elu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(16, kernel_size=(2,2), activation='elu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(32, kernel_size=(2,2), activation='elu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(32*2, kernel_size=(2,2), activation='elu')(ip)
+m = BatchNormalization(axis=-1)(m)
+
+m = Conv2D(32*3, kernel_size=(2,2), activation='elu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
 
-m = Conv2D(32*2, kernel_size=(2,2), activation='relu')(ip)
-m = MaxPooling2D(pool_size=(4,4))(m)
-m = BatchNormalization(axis=-1)(m)
-
-m = Conv2D(32*3, kernel_size=(2,2), activation='relu')(ip)
-m = MaxPooling2D(pool_size=(4,4))(m)
-m = BatchNormalization(axis=-1)(m)
-
-m = Conv2D(32*4, kernel_size=(2,2), activation='relu')(ip)
-m = MaxPooling2D(pool_size=(4,4))(m)
-m = BatchNormalization(axis=-1)(m)
 
 m = Flatten()(m)
 
-m = Dense(64, activation='relu')(m)
+m = Dense(64, activation='elu')(m)
 
-m = Dense(32, activation='relu')(m)
+m = Dense(32, activation='elu')(m)
 
 op = Dense(3, activation='softmax')(m)
 
@@ -132,13 +139,13 @@ for filename in os.listdir(DATA_DIR):
     filename = normalize('NFC', filename)
 
     wav, sr = librosa.load(DATA_DIR + filename)
-    mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=160)
+    mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
 
     #S_1 = librosa.power_to_db(mfcc, ref=np.max)
     #mfcc = _normalize(S_1)
 
     mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
-    padded_mfcc = pad2d(mfcc, 240)
+    padded_mfcc = pad2d(mfcc, 650)
     padded_mfcc= np.expand_dims(padded_mfcc, 0)
 
     #librosa.display.specshow(padded_mfcc, sr=16000, x_axis='time')

@@ -19,13 +19,11 @@ from tensorflow.keras.models import load_model
 # 훈련 데이터의 양은 예전보다 많아짐 대략 a -> 800개 
 
 # 이유 예상 
-
 # 1. 이미지 전처리 문제 
 # 2. ImageDataGenerator 파라미터값들 수정
 # 3. 모델이 구림
 
 # 하나하나 처리해볼 것
-
 
 # 문제 발생 
 

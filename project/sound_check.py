@@ -68,23 +68,35 @@ pad2d = lambda a, i: a[:, 0:i] if a.shape[1] > i else np.hstack((a, np.zeros((a.
 
 DATA_DIR = '../data/project/predict/'
 
-filename = '060-126.m4a'
+# 2초 
+filename = '064-281.m4a'
+
+# 6초
+#filename = '065-301.m4a'
+
+
+
 
 wav, sr = librosa.load(DATA_DIR + filename)
 
-mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=160)
+print("Wav length: {}, Mel_S shape:{}".format(len(wav)/sr,np.shape(wav)))
+
+
+mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
+
+
+# 6초
+#mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=120)
 
 #mfcc = librosa.feature.mfcc(wav)
 
 
-print(mfcc)
 mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
 print("#####")
-print(mfcc)
-print(np.max(mfcc))
-print(np.min(mfcc))
+print(mfcc.shape)
+print("#####")
 
-padded_mfcc = pad2d(mfcc, 240)
+padded_mfcc = pad2d(mfcc, 650)
 
 import matplotlib.pyplot as plt
 import librosa.display

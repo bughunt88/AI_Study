@@ -31,7 +31,6 @@ def _normalize(S):
     return np.clip((S - min_level_db) / -min_level_db, 0, 1)
 
 
-
 TRAIN_DATA_DIR = '../data/project/train/'
 TEST_DATA_DIR = '../data/project/test/'
 
@@ -47,13 +46,15 @@ for index, d_list in enumerate(DIR_List):
             wav, sr = librosa.load(TRAIN_DATA_DIR + d_list + filename)
             
             #mfcc = librosa.feature.mfcc(wav)
-            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=160)
+            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
+            #mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+
 
             #S_1 = librosa.power_to_db(mfcc, ref=np.max)
             #mfcc = _normalize(S_1)
 
             mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
-            padded_mfcc = pad2d(mfcc, 240)
+            padded_mfcc = pad2d(mfcc, 650)
 
             trainset.append((padded_mfcc, index))
 
@@ -75,15 +76,16 @@ for index, d_list in enumerate(DIR_List):
             wav, sr = librosa.load(TEST_DATA_DIR + d_list + filename)
             
             #mfcc = librosa.feature.mfcc(wav)
-            #mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=4000, hop_length=1600)
-            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=160)
+            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
+            #mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+
 
 
             #S_1 = librosa.power_to_db(mfcc, ref=np.max)
             #mfcc = _normalize(S_1)
 
             mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
-            padded_mfcc = pad2d(mfcc, 240)
+            padded_mfcc = pad2d(mfcc, 650)
 
             testset.append((padded_mfcc, index))
 
@@ -99,4 +101,55 @@ random.shuffle(testset)
 
 np.save('../data/project/data/train_data.npy', arr=trainset)
 np.save('../data/project/data/test_data.npy', arr=testset)
+
+
+'''
+
+TEST_DATA_DIR = '../data/project/kfold/'
+DIR_List = ['angry/','nomal/','sad/']
+
+for index, d_list in enumerate(DIR_List):
+    
+    print(index)
+
+    for filename in os.listdir(TEST_DATA_DIR+d_list):
+        filename = normalize('NFC', filename)
+        try:
+            wav, sr = librosa.load(TEST_DATA_DIR + d_list + filename)
+            
+            #mfcc = librosa.feature.mfcc(wav)
+            #mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
+            mfcc = librosa.feature.mfcc(wav, sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+
+
+            #S_1 = librosa.power_to_db(mfcc, ref=np.max)
+            #mfcc = _normalize(S_1)
+
+            mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
+            padded_mfcc = pad2d(mfcc, 650)
+
+            testset.append((padded_mfcc, index))
+
+        except Exception as e:
+            print(filename, e)
+            raise
+
+
+
+# 학습 데이터를 무작위로 섞는다.
+# random.shuffle(trainset)
+random.shuffle(testset)
+
+np.save('../data/project/data/kfold_data.npy', arr=testset)
+'''
+
+# 학습 데이터를 무작위로 섞는다.
+random.shuffle(trainset)
+random.shuffle(testset)
+
+np.save('../data/project/data/train_data.npy', arr=trainset)
+np.save('../data/project/data/test_data.npy', arr=testset)
+
+
+
 
