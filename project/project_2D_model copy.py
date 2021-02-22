@@ -20,8 +20,8 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-trainset = np.load('../data/project/data/train_data.npy',allow_pickle=True)
-testset = np.load('../data/project/data/test_data.npy',allow_pickle=True)
+trainset = np.load('../data/project/data/train_data3.npy',allow_pickle=True)
+testset = np.load('../data/project/data/test_data3.npy',allow_pickle=True)
 
 # split each set into raw data, mfcc data, and y data
 # STFT 한 것, CNN 분석하기 위해 Spectogram으로 만든 것, MF한 것, mel0spectogram 한 것
@@ -60,39 +60,43 @@ test_X_ex = np.expand_dims(test_mfccs, -1)
 print('train X shape:', train_X_ex.shape)
 print('test X shape:', test_X_ex.shape)
 
-x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_size=0.8, random_state = 66 ) 
 
+print(train_X_ex[0].shape)
+
+x_train, x_val, y_train, y_val = train_test_split(train_X_ex, train_y,  train_size=0.8, random_state = 66 ) 
 
 ip = Input(shape=train_X_ex[0].shape)
 
-m = Conv2D(2, kernel_size=(2,2), activation='elu')(ip)
+m = Conv2D(2, kernel_size=(2,2), activation='relu')(ip)
 m = BatchNormalization(axis=-1)(m)
 
-m = Conv2D(4, kernel_size=(2,2), activation='elu')(ip)
+m = Conv2D(4, kernel_size=(2,2), activation='relu')(ip)
 m = BatchNormalization(axis=-1)(m)
 
-m = Conv2D(8, kernel_size=(2,2), activation='elu')(ip)
+m = Conv2D(8, kernel_size=(2,2), activation='relu')(ip)
 m = BatchNormalization(axis=-1)(m)
 
-m = Conv2D(16, kernel_size=(2,2), activation='elu')(ip)
+m = Conv2D(16, kernel_size=(2,2), activation='relu')(ip)
 m = BatchNormalization(axis=-1)(m)
 
-m = Conv2D(32, kernel_size=(2,2), activation='elu')(ip)
+m = Conv2D(32, kernel_size=(2,2), activation='relu')(ip)
+m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
 
-m = Conv2D(32*2, kernel_size=(2,2), activation='elu')(ip)
+m = Conv2D(32*2, kernel_size=(2,2), activation='relu')(ip)
+m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
 
-m = Conv2D(32*3, kernel_size=(2,2), activation='elu')(ip)
+m = Conv2D(32*3, kernel_size=(2,2), activation='relu')(ip)
 m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
 
 
 m = Flatten()(m)
 
-m = Dense(64, activation='elu')(m)
+m = Dense(64, activation='relu')(m)
 
-m = Dense(32, activation='elu')(m)
+m = Dense(32, activation='relu')(m)
 
 op = Dense(3, activation='softmax')(m)
 
@@ -110,7 +114,7 @@ reLR = ReduceLROnPlateau(patience=5,verbose=1,factor=0.5) #learning rate schedul
 history = model.fit(x_train,
                     y_train,
                     epochs=500,
-                    batch_size=8,
+                    batch_size=32,
                     verbose=1,
                     validation_data=(x_val, y_val), callbacks=[eraly_stopping,reLR])
 
@@ -123,29 +127,23 @@ print('loss : ',loss)
 print('acc : ',acc)
 
 
-min_level_db = -100
- 
-def _normalize(S):
-    return np.clip((S - min_level_db) / -min_level_db, 0, 1)
-
-
-print(x_train.shape)
-print(y_train.shape)
-
-
 DATA_DIR = '../data/project/predict/'
 
 for filename in os.listdir(DATA_DIR):
     filename = normalize('NFC', filename)
 
-    wav, sr = librosa.load(DATA_DIR + filename)
-    mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
+    wav, sr = librosa.load(DATA_DIR + filename,sr=16000)
+                    
+    mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=40, n_fft=1000, hop_length=160)
+    mfcc = librosa.feature.delta(mfcc, order=2)
 
-    #S_1 = librosa.power_to_db(mfcc, ref=np.max)
-    #mfcc = _normalize(S_1)
+    # 6초
+    #mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=80, n_fft=1000, hop_length=120)
+
+    #mfcc = librosa.feature.mfcc(wav)
 
     mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
-    padded_mfcc = pad2d(mfcc, 650)
+    padded_mfcc = pad2d(mfcc, 700)
     padded_mfcc= np.expand_dims(padded_mfcc, 0)
 
     #librosa.display.specshow(padded_mfcc, sr=16000, x_axis='time')
@@ -168,3 +166,9 @@ for filename in os.listdir(DATA_DIR):
 # 101~150 평상시 - 1
 # 251~300 분노 - 0
 # 301~350 슬픔 - 2
+
+
+'''
+loss :  1.6047866344451904
+acc :  0.7803468108177185
+'''

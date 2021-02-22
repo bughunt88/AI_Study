@@ -16,16 +16,13 @@ from keras.layers import Dense, TimeDistributed, Dropout, Bidirectional, GRU, Ba
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import EarlyStopping,ReduceLROnPlateau
 from sklearn.model_selection import KFold
+from tensorflow.keras.layers import BatchNormalization, ZeroPadding2D, Activation, Add, GlobalAveragePooling2D
 
 import warnings
 
 warnings.filterwarnings('ignore')
 
-trainset = np.load('../data/project/data/train_data.npy',allow_pickle=True)
-testset = np.load('../data/project/data/test_data.npy',allow_pickle=True)
-
-kfoldset = np.load('../data/project/data/kfold_data.npy',allow_pickle=True)
-
+kfoldset = np.load('../data/project/data/kfold_data1.npy',allow_pickle=True)
 
 # split each set into raw data, mfcc data, and y data
 # STFT 한 것, CNN 분석하기 위해 Spectogram으로 만든 것, MF한 것, mel0spectogram 한 것
@@ -38,7 +35,6 @@ test_mfccs = []
 test_y = []
 
 # 모든 음성파일의 길이가 같도록 후위에 padding 처리
-pad1d = lambda a, i: a[0: i] if a.shape[0] > i else np.hstack((a, np.zeros(i-a.shape[0])))
 pad2d = lambda a, i: a[:, 0:i] if a.shape[1] > i else np.hstack((a, np.zeros((a.shape[0], i-a.shape[1]))))
 
 kfold_mfccs = [a for (a,b) in kfoldset]
@@ -68,39 +64,10 @@ for train_index, test_index  in skf.split(kfold_mfccs) :
 
     x_train, x_val, y_train, y_val = train_test_split(x_train1, y_train1,  train_size=0.8, random_state = 66 ) 
 
-
-    print(x_train1.shape)
-
-    print("########################")
-    print(x_train.shape)
-    print(y_train.shape)
-
-    print(x_val.shape)
-
-    print("#####################@@@@@@@@@@@@")
-
-    print(x_train.shape)
-    print(y_train.shape)
-
-    '''
-    train_mfccs: (1657, 120, 650)     
-    train_y: (1657, 3)
-    test_mfccs: (173, 120, 650)       
-    test_y: (173, 3)
-    train X shape: (1657, 120, 650, 1)
-    test X shape: (173, 120, 650, 1)  
-    (120, 650, 1)
-    '''
-    
     x_train = np.expand_dims(x_train, -1)
 
-    print(x_train.shape)
-    print(y_train.shape)
-    print("########################")
-    print(x_train[0].shape)
-
-    ip = Input(shape=x_train[0].shape)
-
+    ip = Input(shape=x_train [0].shape)
+        
     m = Conv2D(2, kernel_size=(2,2), activation='relu')(ip)
     m = BatchNormalization(axis=-1)(m)
 
@@ -125,6 +92,7 @@ for train_index, test_index  in skf.split(kfold_mfccs) :
     m = MaxPooling2D(pool_size=(4,4))(m)
     m = BatchNormalization(axis=-1)(m)
 
+
     m = Flatten()(m)
 
     m = Dense(64, activation='relu')(m)
@@ -141,18 +109,19 @@ for train_index, test_index  in skf.split(kfold_mfccs) :
                 metrics=['accuracy'])
 
 
-    eraly_stopping = EarlyStopping(monitor='loss', patience=20, mode='auto') # mode는 min,max,auto 있다
-    reLR = ReduceLROnPlateau(patience=5,verbose=1,factor=0.5) #learning rate scheduler
+    eraly_stopping = EarlyStopping(monitor='loss', patience=10, mode='auto') # mode는 min,max,auto 있다
+    reLR = ReduceLROnPlateau(patience=4,verbose=1,factor=0.002) #learning rate scheduler
 
     history = model.fit(x_train,
                         y_train,
-                        epochs=500,
-                        batch_size=8,
+                        epochs=300,
+                        batch_size=32,
                         verbose=1,
                         validation_data=(x_val, y_val), callbacks=[eraly_stopping,reLR])
 
 
-    model.save('../data/project/file/save_model_kfold'+str(num)+'.h5')
+
+    model.save('../data/project/file/save_model_kfold_new'+str(num)+'.h5')
 
     loss, acc= model.evaluate(x_test, y_test, batch_size=8)
     # 지표를 만들기 위한 프레딕트 
@@ -168,49 +137,11 @@ print("ACC")
 print(kfold_acc_list)
 
 
-'''
-    DATA_DIR = '../data/project/predict/'
-
-    for filename in os.listdir(DATA_DIR):
-        filename = normalize('NFC', filename)
-
-        wav, sr = librosa.load(DATA_DIR + filename)
-        mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=120, n_fft=1000, hop_length=120)
-
-        #S_1 = librosa.power_to_db(mfcc, ref=np.max)
-        #mfcc = _normalize(S_1)
-
-        mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
-        padded_mfcc = pad2d(mfcc, 650)
-        padded_mfcc= np.expand_dims(padded_mfcc, 0)
-
-        #librosa.display.specshow(padded_mfcc, sr=16000, x_axis='time')
-
-        y_pred = model.predict(padded_mfcc)
-        
-        y_predict=np.argmax(y_pred, axis=1)
-
-        if y_predict == 0:
-            y_predict = '분노'
-        elif y_predict == 1:
-            y_predict = '평상시'
-        elif y_predict == 2:
-            y_predict = '슬픔'
-
-
-        print('파일 명 : ',filename)
-        print('예측값 : ', y_predict)
-
-    # 101~150 평상시 - 1
-    # 251~300 분노 - 0
-    # 301~350 슬픔 - 2
-
-'''
-
-
 # 로스
-# [4.083415985107422, 1.4742237329483032, 2.5895190238952637, 1.9262902736663818, 2.1092889308929443, 2.734142780303955, 3.2057576179504395, 2.1240248680114746]
+# [3.1941072940826416, 1.3412975072860718, 2.2810473442077637, 2.143760919570923, 2.7560174465179443, 2.6420445442199707, 2.208706855773926, 1.9915393590927124]
 # ACC
-# [0.751091718673706, 0.7598253488540649, 0.6331877708435059, 0.7074235677719116, 0.72052401304245, 0.6681222915649414, 0.7061403393745422, 0.6666666865348816]
+# [0.7117903828620911, 0.7772925496101379, 0.6681222915649414, 0.7074235677719116, 0.7336244583129883, 0.7030567526817322, 0.719298243522644, 0.780701756477356]
 
-# 2번 모델이 가장 좋음
+# 8번이 가장 좋음
+
+# 모델을 잘 만들고 K폴드 돌려보자
