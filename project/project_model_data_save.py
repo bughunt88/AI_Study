@@ -39,7 +39,7 @@ for index, d_list in enumerate(DIR_List):
         filename = normalize('NFC', filename)
         try:
             wav, sr = librosa.load(TRAIN_DATA_DIR + d_list + filename,sr=16000)
-            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=1000, hop_length=160)
+            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=400, hop_length=160)
             mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
             padded_mfcc = pad2d(mfcc, 650)
             trainset.append((padded_mfcc, index))
@@ -60,7 +60,7 @@ for index, d_list in enumerate(DIR_List):
         filename = normalize('NFC', filename)
         try:
             wav, sr = librosa.load(TEST_DATA_DIR + d_list + filename,sr=16000)
-            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=1000, hop_length=160)
+            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=400, hop_length=160)
             mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
             padded_mfcc = pad2d(mfcc, 650)
             testset.append((padded_mfcc, index))
@@ -81,7 +81,7 @@ for index, d_list in enumerate(DIR_List):
         filename = normalize('NFC', filename)
         try:
             wav, sr = librosa.load(TEST_DATA_DIR + d_list + filename,sr=16000)
-            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=1000, hop_length=160)
+            mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=400, hop_length=160)
             mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
             padded_mfcc = pad2d(mfcc, 650)
             kfoldset.append((padded_mfcc, index))

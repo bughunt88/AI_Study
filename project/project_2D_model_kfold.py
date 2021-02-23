@@ -67,43 +67,26 @@ for train_index, test_index  in skf.split(kfold_mfccs) :
     x_train = np.expand_dims(x_train, -1)
 
     ip = Input(shape=x_train[0].shape)
-
-    m = Conv2D(2, kernel_size=(2,2), activation='relu')(ip)
+    m = Conv2D(64, kernel_size=(2,2), activation='relu')(ip)
     m = BatchNormalization(axis=-1)(m)
-
-    m = Conv2D(4, kernel_size=(2,2), activation='relu')(ip)
-    m = BatchNormalization(axis=-1)(m)
-
-    m = Conv2D(8, kernel_size=(2,2), activation='relu')(ip)
-    m = BatchNormalization(axis=-1)(m)
-
-    m = Conv2D(16, kernel_size=(2,2), activation='relu')(ip)
-    m = BatchNormalization(axis=-1)(m)
-
-    m = Conv2D(32, kernel_size=(2,2), activation='relu')(ip)
+    m = Conv2D(64, kernel_size=(2,2), activation='relu')(m)
     m = MaxPooling2D(pool_size=(4,4))(m)
     m = BatchNormalization(axis=-1)(m)
-
-    m = Conv2D(32*2, kernel_size=(2,2), activation='relu')(ip)
-    m = MaxPooling2D(pool_size=(4,4))(m)
+    m = Dropout(0.3)(m)
+    m = Conv2D(64, kernel_size=(2,2), activation='relu')(m)
     m = BatchNormalization(axis=-1)(m)
-
-    m = Conv2D(32*3, kernel_size=(2,2), activation='relu')(ip)
-    m = MaxPooling2D(pool_size=(4,4))(m)
+    m = Conv2D(64, kernel_size=(4,4), activation='relu')(m)
     m = BatchNormalization(axis=-1)(m)
-
-    m = Conv2D(32*3, kernel_size=(2,2), activation='relu')(ip)
-    m = MaxPooling2D(pool_size=(4,4))(m)
-    m = BatchNormalization(axis=-1)(m)
+    m = Dropout(0.3)(m)
 
     m = Flatten()(m)
 
-    m = Dense(64, activation='relu')(m)
-
-    m = Dense(32, activation='relu')(m)
-
+    m = Dense(1024, activation='relu')(m)
+    m = BatchNormalization(axis=-1)(m)
+    m = Dropout(0.3)(m)
+    m = Dense(1024, activation='relu')(m)
+    m = BatchNormalization(axis=-1)(m)
     op = Dense(3, activation='softmax')(m)
-
     model = Model(ip, op)
 
 

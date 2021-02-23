@@ -39,14 +39,28 @@ DATA_DIR = '../data/project/predict/'
 
 # 6초
 #filename = '분노 데이터1 입니다.m4a'
+#(104448,)
 
-filename = '슬픔 데이터 입니다.m4a'
+filename = '분노 데이터1 입니다.m4a'
 
 
 wav, sr = librosa.load(DATA_DIR + filename,sr=16000)
-mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=1000, hop_length=160)
+
+print(wav.shape)
+
+
+
+mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+#mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
+
+print(mfcc.shape)
+
 mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
+
 padded_mfcc = pad2d(mfcc, 650)
+
+print(padded_mfcc.shape)
+
 
 import matplotlib.pyplot as plt
 import librosa.display

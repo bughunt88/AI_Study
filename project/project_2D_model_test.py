@@ -53,16 +53,18 @@ x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  train_size=
 ip = Input(shape=train_X_ex[0].shape)
 m = Conv2D(64, kernel_size=(2,2), activation='relu')(ip)
 m = BatchNormalization(axis=-1)(m)
-m = Conv2D(64, kernel_size=(2,2), activation='relu')(ip)
+m = Conv2D(64, kernel_size=(2,2), activation='relu')(m)
 m = MaxPooling2D(pool_size=(4,4))(m)
 m = BatchNormalization(axis=-1)(m)
 m = Dropout(0.3)(m)
-m = Conv2D(64, kernel_size=(2,2), activation='relu')(ip)
+m = Conv2D(64, kernel_size=(2,2), activation='relu')(m)
 m = BatchNormalization(axis=-1)(m)
-m = Conv2D(64, kernel_size=(4,4), activation='relu')(ip)
+m = Conv2D(64, kernel_size=(4,4), activation='relu')(m)
 m = BatchNormalization(axis=-1)(m)
 m = Dropout(0.3)(m)
+
 m = Flatten()(m)
+
 m = Dense(1024, activation='relu')(m)
 m = BatchNormalization(axis=-1)(m)
 m = Dropout(0.3)(m)
@@ -71,6 +73,9 @@ m = BatchNormalization(axis=-1)(m)
 op = Dense(3, activation='softmax')(m)
 
 model = Model(ip, op)
+
+model.summary()
+
 
 
 model.compile(loss='categorical_crossentropy',
