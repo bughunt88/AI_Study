@@ -15,6 +15,9 @@ from keras.optimizers import Adam
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 import string
 
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
+
 x_data = np.load('../data/vision2/predict_data.npy')
 
 print(x_data.shape)
@@ -31,6 +34,13 @@ plt.imshow(x_data[1])
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 plt.show()
+
+
+
+
+print("#####################")
+
+
 
 train = pd.read_csv('../data/vision2/mnist_data/train.csv')
 

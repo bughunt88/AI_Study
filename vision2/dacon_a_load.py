@@ -12,6 +12,12 @@ from keras.optimizers import Adam
 from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 import string
 
+
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
+
+print(pytesseract.image_to_string('img.png'))
+
 '''
 alphabets = string.ascii_lowercase
 alphabets = list(alphabets)

@@ -5,6 +5,12 @@ from PIL import Image
 import cv2
 
 
+
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
+
+
+
 # 오픈 cv를 통해 전처리 후 128, 128로 리사이징 npy 저장!
 
 img=[]
@@ -20,7 +26,9 @@ for i in range(50000):
     image_data = cv2.resize(image_data, (128, 128))
     image_data = np.array(image_data)
     img.append(image_data)
-np.save('../data/vision2/train_data.npy', arr=img)
+#np.save('../data/vision2/train_data.npy', arr=img)
+
+
 
 print("train 끝")
 
@@ -35,9 +43,12 @@ for i in range(50000,55000):
     image3 = cv2.dilate(image2, kernel=np.ones((2, 2), np.uint8), iterations=1)
     image_data = cv2.medianBlur(src=image3, ksize= 5)  #점처럼 놓여있는  noise들을 제거할수있음
     image_data = cv2.resize(image_data, (128, 128))
+
     image_data = np.array(image_data)
+    
+    
     img.append(image_data)
-np.save('../data/vision2/predict_data.npy', arr=img)
+#np.save('../data/vision2/predict_data.npy', arr=img)
 
 
 print("predict 끝")

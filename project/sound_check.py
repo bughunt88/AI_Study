@@ -41,7 +41,7 @@ DATA_DIR = '../data/project/predict/'
 #filename = '분노 데이터1 입니다.m4a'
 #(104448,)
 
-filename = '분노 데이터1 입니다.m4a'
+filename = '평상시 데이터 입니다.m4a'
 
 
 wav, sr = librosa.load(DATA_DIR + filename,sr=16000)
@@ -49,9 +49,15 @@ wav, sr = librosa.load(DATA_DIR + filename,sr=16000)
 print(wav.shape)
 
 
-
-mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=100, n_fft=400, hop_length=160)
+mfcc = librosa.feature.mfcc(wav,sr=16000, n_mfcc=50, n_fft=400, hop_length=1600)
 #mfcc = sklearn.preprocessing.scale(mfcc, axis=1)
+
+
+
+
+print(mfcc)
+
+
 
 print(mfcc.shape)
 
@@ -69,3 +75,6 @@ plt.colorbar()
 plt.title('MFCC')
 plt.tight_layout()
 plt.show()
+
+#(50, 31) 
+#(50, 650)
