@@ -35,13 +35,6 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 plt.show()
 
-
-
-
-print("#####################")
-
-
-
 train = pd.read_csv('../data/vision2/mnist_data/train.csv')
 
 # 256, 256 이미지를 돌리면 터진다 
