@@ -3,7 +3,7 @@ import cv2
 
 
 src = cv2.imread('../data/vision2/test_dirty_mnist_2nd/50001.png')
-gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+gray = cv2.cvtCo1lor(src, cv2.COLOR_BGR2GRAY)
 
 contours, hierarchy = cv2.findContours(gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 print(hierarchy)

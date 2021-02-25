@@ -7,7 +7,7 @@ import PIL.Image as pilimg
 
 
 
-image = cv2.imread('../data/vision2/test_dirty_mnist_2nd/50000.png', cv2.IMREAD_GRAYSCALE)
+image = cv2.imread('../data/vision2/test_dirty_mnist_2nd/50001.png', cv2.IMREAD_GRAYSCALE)
 pix = np.array(image)
 
 
