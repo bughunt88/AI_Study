@@ -40,7 +40,7 @@ dftrain = dftrain.reshape(-1,28,28)
 
 for i in range(dftrain.shape[0]):
     img=dftrain[i]
-    img=np.where((img<65)&(img!=0), 0, img)
-    img=np.where((img>65)&(img!=0), 255, img)
+    img=np.where((img<60)&(img!=0), 0, img)
+    img=np.where((img>60)&(img!=0), 254, img)
     img=Image.fromarray(img.astype('uint8'))
     img.save('C:/data/vision2/cut/%d.png'%i)
