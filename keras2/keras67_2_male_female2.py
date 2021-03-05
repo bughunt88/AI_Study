@@ -7,7 +7,6 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, BatchNormalization
 
-'''
 train_datagen = ImageDataGenerator(
     rescale=1./255,
     horizontal_flip = True,
@@ -46,17 +45,16 @@ xy_test = train_datagen.flow_from_directory(
 print(xy_train[0][0].shape) # (14, 150, 150, 3)
 print(xy_train[0][1].shape) # (14,)
 
-np.save('../data/image/brain/numpy/keras67_train_x.npy', arr=xy_train[0][0])
-np.save('../data/image/brain/numpy/keras67_train_y.npy', arr=xy_train[0][1])
-np.save('../data/image/brain/numpy/keras67_test_x.npy', arr=xy_test[0][0])
-np.save('../data/image/brain/numpy/keras67_test_y.npy', arr=xy_test[0][1])
+np.save('../data/image/sex/numpy/keras67_train_x.npy', arr=xy_train[0][0])
+np.save('../data/image/sex/numpy/keras67_train_y.npy', arr=xy_train[0][1])
+np.save('../data/image/sex/numpy/keras67_test_x.npy', arr=xy_test[0][0])
+np.save('../data/image/sex/numpy/keras67_test_y.npy', arr=xy_test[0][1])
 
-'''
 
-x_train = np.load('../data/image/brain/numpy/keras67_train_x.npy')
-y_train = np.load('../data/image/brain/numpy/keras67_train_y.npy')
-x_test = np.load('../data/image/brain/numpy/keras67_test_x.npy')
-y_test = np.load('../data/image/brain/numpy/keras67_test_y.npy')
+x_train = np.load('../data/image/sex/numpy/keras67_train_x.npy')
+y_train = np.load('../data/image/sex/numpy/keras67_train_y.npy')
+x_test = np.load('../data/image/sex/numpy/keras67_test_x.npy')
+y_test = np.load('../data/image/esx/numpy/keras67_test_y.npy')
 
 
 model = Sequential()
