@@ -6,11 +6,6 @@ y_train = np.load('../data/image/sex/numpy/keras67_train_y.npy')
 x_test = np.load('../data/image/sex/numpy/keras67_test_x.npy')
 y_test = np.load('../data/image/sex/numpy/keras67_test_y.npy')
 
-print(x_train.shape)
-print(y_train.shape)
-print(x_test.shape)
-print(y_test.shape)
-
 x_train_noised = x_train + np.random.normal(0,0.2, size=x_train.shape)
 x_test_noised = x_test + np.random.normal(0,0.2, size=x_test.shape)
 x_trina_noised = np.clip(x_train_noised, a_min=0, a_max=1)
@@ -39,6 +34,7 @@ from matplotlib import pyplot as plt
 import random
 
 fig, ((ax1, ax2, ax3, ax4, ax5), (ax6, ax7, ax8, ax9, ax10), (ax11, ax12, ax13, ax14, ax15)) = plt.subplots(3,5, figsize=(20,7))
+
 
 # 이미지 다셧개를 무작위로 고른다. 
 
