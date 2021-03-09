@@ -324,8 +324,6 @@ df2 = pd.DataFrame(l2, columns = ['name', 'job'])
 frames = [df1, df2]
 result = pd.concat(frames, ignore_index=True)
 
-
-
 l1 = [{'name': 'John', 'job': "teacher"},
       {'name': 'Nate', 'job': "student"},
       {'name': 'Fred', 'job': "developer"}]
@@ -338,9 +336,6 @@ df1 = pd.DataFrame(l1, columns = ['name', 'job'])
 df2 = pd.DataFrame(l2, columns = ['name', 'job'])
 
 result = df1.append(df2, ignore_index=True)
-
-
-
 
 
 # 열로 데이터 합치기 
@@ -368,4 +363,12 @@ comparison = pd.DataFrame(
     {'label': label,
      'prediction': prediction
     })
+
+
+
+
+# 판다스 
+
+# shfit(-1)  컬럼의 값을 위로 당긴다
+# fillna : 데이터 당긴 nan 데이터를 원하는 데이터로 채운다 
 

@@ -15,7 +15,7 @@ def outliers(data_out):
     iqr = quartile_3 - quartile_1
     lower_bound = quartile_1 - (iqr * 1.5)
     upper_bound = quartile_3 + (iqr * 1.5)
-    # 통상적으로 이상치 처리하려면 1.5 곱한다 ㅇ,
+    # 통상적으로 이상치 처리하려면 1.5 곱한다
 
     return np.where((data_out>upper_bound) | (data_out<lower_bound))
 
