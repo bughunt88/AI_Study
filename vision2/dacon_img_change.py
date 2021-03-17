@@ -5,12 +5,6 @@ from PIL import Image
 import cv2
 
 
-
-import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
-
-
-
 # 오픈 cv를 통해 전처리 후 128, 128로 리사이징 npy 저장!
 
 img=[]
