@@ -29,10 +29,9 @@ warnings.filterwarnings('ignore')
 sub = pd.read_csv('../data/LPD_competition/sample.csv', header = 0)
 
 
-x_train = np.load('../data/lpd_competition/npy/train_data_x.npy')
-y_train = np.load('../data/lpd_competition/npy/train_data_y.npy')
-x_test = np.load('../data/lpd_competition/npy/predict_data.npy')
-
+x_train = np.load('../data/lpd_competition/npy/train_data_x9.npy')
+y_train = np.load('../data/lpd_competition/npy/train_data_y9.npy')
+x_test = np.load('../data/lpd_competition/npy/predict_data9.npy')
 
 x_train = x_train.reshape(60000, x_train.shape[1]*x_train.shape[3]*x_train.shape[4]).astype('float32')/255.
 x_test = x_test.reshape(60000, x_test.shape[1]*x_test.shape[3]*x_test.shape[4]).astype('float32')/255.
@@ -71,7 +70,7 @@ print('최적의 매개변수 : ', model.best_estimator_)
 y_pred = model.predict(x_test)
 
 sub.loc[:,'prediction'] = y_pred
-sub.to_csv('../data/LPD_competition/sample_001.csv', index = False)
+sub.to_csv('../data/LPD_competition/sample_011.csv', index = False)
 
 #print('최종정답률 : ', accuracy_score(y_test,y_pred))
 

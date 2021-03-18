@@ -10,9 +10,9 @@ from keras.layers import *
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.optimizers import Adam,SGD
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.applications import EfficientNetB7
 from tensorflow.keras.applications.efficientnet import preprocess_input
 from tensorflow.keras.utils import to_categorical
+from tqdm import tqdm
 
 
 #데이터 지정 및 전처리
@@ -27,7 +27,6 @@ idg = ImageDataGenerator(
     width_shift_range=(-1,1),   
     height_shift_range=(-1,1),  
     shear_range=0.2) 
-
 
 idg2 = ImageDataGenerator()
 
@@ -60,15 +59,17 @@ model = Model(inputs=mobile_net.input, outputs = top_model)
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import GlobalAveragePooling2D, Flatten, BatchNormalization, Dense, Activation
-efficientnetb7 = EfficientNetB7(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
-efficientnetb7.trainable = True
-a = efficientnetb7.output
+from tensorflow.keras.applications import EfficientNetB7, EfficientNetB5, ResNet101
+
+efficientnet = EfficientNetB5(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
+efficientnet.trainable = True
+a = efficientnet.output
 a = GlobalAveragePooling2D() (a)
 a = Flatten() (a)
-a = Dense(2028, activation="relu")(a)
-a = Dense(1000, activation="softmax")(a)
+a = Dense(4048, activation= 'relu') (a)
+a = Dense(1000, activation= 'softmax') (a)
 
-model = Model(inputs = efficientnetb7.input, outputs = a)
+model = Model(inputs = efficientnet.input, outputs = a)
 
 
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
@@ -81,9 +82,16 @@ learning_history = model.fit_generator(train_generator,epochs=100,
     validation_data=valid_generator, callbacks=[early_stopping,lr,mc])
 # predict
 model.load_weights('../data/lpd_competition/lotte_0317_2.h5')
-result = model.predict(test_generator,verbose=True)
-    
-print(result.shape)
+
+tta_steps = 10
+predictions = []
+
+for i in tqdm(range(tta_steps)):
+    preds = model.predict_generator(x_pred,verbose=True)
+    predictions.append(preds)
+
+final_pred = np.mean(predictions, axis=0)
+
 sub = pd.read_csv('../data/lpd_competition/sample.csv')
-sub['prediction'] = np.argmax(result,axis = 1)
-sub.to_csv('../data/lpd_competition/sample_001.csv',index=False)
+sub['prediction'] = np.argmax(final_pred,axis = 1)
+sub.to_csv('../data/lpd_competition/sample_003.csv',index=False)
