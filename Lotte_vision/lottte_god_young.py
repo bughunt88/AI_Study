@@ -15,9 +15,9 @@ from tensorflow.keras.utils import to_categorical
 from tqdm import tqdm
 
 #데이터 지정 및 전처리
-x = np.load("../data/lpd_competition/npy/train_data_x9.npy",allow_pickle=True)
-x_pred = np.load('../data/lpd_competition/npy/predict_data9.npy',allow_pickle=True)
-y = np.load("../data/lpd_competition/npy/train_data_y9.npy",allow_pickle=True)
+x = np.load("../data/lpd_competition/npy/train_data_x.npy",allow_pickle=True)
+x_pred = np.load('../data/lpd_competition/npy/predict_data.npy',allow_pickle=True)
+y = np.load("../data/lpd_competition/npy/train_data_y.npy",allow_pickle=True)
 
 x = preprocess_input(x) 
 x_pred = preprocess_input(x_pred) 
@@ -51,7 +51,7 @@ mobile_net = MobileNet(weights="imagenet", include_top=False, input_shape=(128, 
 top_model = mobile_net.output
 top_model = GlobalAveragePooling2D()(top_model)
 top_model = Flatten()(top_model)
-top_model = Dense(1024, activation="relu")(top_model)
+top_model = Dense(4000, activation="relu")(top_model)
 # top_model = Dense(1024, activation="relu")(top_model)
 # top_model = Dense(512, activation="relu")(top_model)
 top_model = Dense(1000, activation="softmax")(top_model)
@@ -83,4 +83,4 @@ final_pred = np.mean(predictions, axis=0)
 
 sub = pd.read_csv('../data/lpd_competition/sample.csv')
 sub['prediction'] = np.argmax(final_pred,axis = 1)
-sub.to_csv('../data/lpd_competition/sample_003.csv',index=False)
+sub.to_csv('../data/lpd_competition/sample_006.csv',index=False)

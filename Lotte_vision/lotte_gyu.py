@@ -19,22 +19,12 @@ es = EarlyStopping(patience = 5)
 lr = ReduceLROnPlateau(factor = 0.25, patience = 3, verbose = 1)
 cp = ModelCheckpoint(model_path, save_best_only= True)
 
-x_train = np.load('../data/lpd_competition/npy/train_data_x1.npy')
-y_train = np.load('../data/lpd_competition/npy/train_data_y1.npy')
-x_test1 = np.load('../data/lpd_competition/npy/predict_data_1.npy')
-x_test2 = np.load('../data/lpd_competition/npy/predict_data_2.npy')
+x_train = np.load('../data/lpd_competition/npy/train_data_x.npy')
+y_train = np.load('../data/lpd_competition/npy/train_data_y.npy')
+x_test = np.load('../data/lpd_competition/npy/predict_data.npy')
 
 
 y_train = to_categorical(y_train)
-
-x_test = []
-
-print(x_test1.shape)
-x_test.append[x_test1]
-print(x_test.shape)
-x_test.append[x_test2]
-print(x_test.shape)
-
 
 #2. 모델
 '''

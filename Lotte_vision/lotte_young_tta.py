@@ -16,9 +16,9 @@ from tqdm import tqdm
 
 
 #데이터 지정 및 전처리
-x = np.load("../data/lpd_competition/npy/train_data_x9.npy",allow_pickle=True)
-x_pred = np.load('../data/lpd_competition/npy/predict_data9.npy',allow_pickle=True)
-y = np.load("../data/lpd_competition/npy/train_data_y9.npy",allow_pickle=True)
+x = np.load("../data/lpd_competition/npy/train_data_x.npy",allow_pickle=True)
+x_pred = np.load('../data/lpd_competition/npy/predict_data.npy',allow_pickle=True)
+y = np.load("../data/lpd_competition/npy/train_data_y.npy",allow_pickle=True)
 
 x = preprocess_input(x)
 x_pred = preprocess_input(x_pred)

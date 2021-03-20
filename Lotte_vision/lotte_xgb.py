@@ -33,8 +33,8 @@ x_train = np.load('../data/lpd_competition/npy/train_data_x9.npy')
 y_train = np.load('../data/lpd_competition/npy/train_data_y9.npy')
 x_test = np.load('../data/lpd_competition/npy/predict_data9.npy')
 
-x_train = x_train.reshape(60000, x_train.shape[1]*x_train.shape[3]*x_train.shape[4]).astype('float32')/255.
-x_test = x_test.reshape(60000, x_test.shape[1]*x_test.shape[3]*x_test.shape[4]).astype('float32')/255.
+x_train = x_train.reshape(60000, x_train.shape[1]*x_train.shape[2]*x_train.shape[3]).astype('float32')
+x_test = x_test.reshape(60000, x_test.shape[1]*x_test.shape[2]*x_test.shape[3]).astype('float32')
 
 print(x_train.shape)
 

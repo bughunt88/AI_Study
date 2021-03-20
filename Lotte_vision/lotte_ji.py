@@ -5,10 +5,10 @@ from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import GlobalAveragePooling2D, Flatten, BatchNormalization, Dense, Activation, Dropout
+from tensorflow.keras.layers import GlobalAveragePooling2D, Flatten, BatchNormalization, Dense, Activation, Dropout, MaxPooling2D
 import pandas as pd
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.applications import VGG19, MobileNet, ResNet101
+from tensorflow.keras.applications import VGG19, MobileNet, ResNet101, EfficientNetB5
 from tensorflow.keras.utils import to_categorical
 from tqdm import tqdm
 
@@ -46,7 +46,7 @@ valid_generator = idg2.flow(x_valid,y_valid)
 mc = ModelCheckpoint('../data/lpd_competition/lotte_0317_3.h5',save_best_only=True, verbose=1)
 
 # efficientnet = EfficientNetB4(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
-mobile = VGG19(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
+mobile = EfficientNetB4(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
 mobile.trainable = True
 a = mobile.output
 a = GlobalAveragePooling2D() (a)
