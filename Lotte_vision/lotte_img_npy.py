@@ -17,7 +17,7 @@ for i in range(1000):
         image = cv2.imread(filepath) # cv2.IMREAD_GRAYSCALE
     # 커널 생성(대상이 있는 픽셀을 강조)
 
-        image_sharp = cv2.resize(image, (128, 128))
+        image_sharp = cv2.resize(image, (224, 224))
 
         image_data = np.array(image_sharp)
         img.append(image_data)
@@ -36,7 +36,7 @@ for i in range(72000):
     #image_data = image.resize((128,128))
     image = cv2.imread(filepath) # cv2.IMREAD_GRAYSCALE
 
-    image_sharp = cv2.resize(image, (128, 128))
+    image_sharp = cv2.resize(image, (224, 224))
 
     image_data = np.array(image_sharp)
     img.append(image_data)

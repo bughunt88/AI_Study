@@ -23,10 +23,9 @@ y = np.load("../data/lpd_competition/npy/train_data_y.npy",allow_pickle=True)
 x = preprocess_input(x) # (48000, 255, 255, 3)
 x_pred = preprocess_input(x_pred)   # 
 
-
 #1. 데이터
 idg = ImageDataGenerator(
-    validation_split = 0.2,
+    #validation_split = 0.2,
     width_shift_range= 0.1,
     height_shift_range= 0.1,
     preprocessing_function= preprocess_input,
@@ -44,17 +43,18 @@ idg2 = ImageDataGenerator()
 
 x_train, x_valid, y_train, y_valid = train_test_split(x,y, train_size = 0.9, shuffle = True, random_state=66)
 
-train_generator = idg.flow(x_train,y_train,batch_size=16, seed = 2048)
+train_generator = idg.flow(x_train,y_train,batch_size=8, seed = 2048)
 # seed => random_state
 valid_generator = idg2.flow(x_valid,y_valid)
 test_generator = idg1.flow(x_pred)
 
+'''
 mc = ModelCheckpoint('../data/lpd_competition/lotte_0317_3.h5',save_best_only=True, verbose=1)
 
 # efficientnet = EfficientNetB4(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
 
 mobile = EfficientNetB4(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
-mobile.trainable = True
+mobile.trainable = False
 a = mobile.output
 a = MaxPooling2D() (a)
 a = Flatten() (a)
@@ -68,15 +68,22 @@ model = Model(inputs = mobile.input, outputs = a)
 early_stopping = EarlyStopping(patience= 20)
 lr = ReduceLROnPlateau(patience= 10, factor=0.5)
 
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
-learning_history = model.fit_generator(train_generator,epochs=200, steps_per_epoch= len(x_train) / 64,
-    validation_data=valid_generator, callbacks=[early_stopping,lr,mc])
-
+'''
 
 # predict
 from tensorflow.keras.models import Sequential, load_model
 
 # model = load_model('../data/lpd_competition/lotte_0317_3.h5')
+
+
+import tensorflow as tf 
+model = tf.train.latest_checkpoint('../data/lpd_competition/', latest_filename=None)
+
+
+#model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+#learning_history = model.fit_generator(train_generator,epochs=200, steps_per_epoch= len(x_train) / 64, validation_data=valid_generator, callbacks=[early_stopping,lr,mc])
+
+
 
 tta_steps = 10
 predictions = []
