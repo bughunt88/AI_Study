@@ -4,8 +4,7 @@ from numpy import asarray
 from PIL import Image
 import cv2
 
-
-# 오픈 cv를 통해 전처리 후 128, 128로 리사이징 npy 저장!
+# 오픈 cv를 통해 전철희 후 128, 128로 리사이징 npy 저장!
 
 img=[]
 img_y=[]
@@ -17,15 +16,14 @@ for i in range(1000):
         image = cv2.imread(filepath) # cv2.IMREAD_GRAYSCALE
     # 커널 생성(대상이 있는 픽셀을 강조)
 
-        image_sharp = cv2.resize(image, (224, 224))
+        image_sharp = cv2.resize(image, (192, 192))
 
         image_data = np.array(image_sharp)
         img.append(image_data)
         img_y.append(i)
 
-np.save('../data/LPD_competition/npy/train_data_x.npy', arr=img)
-np.save('../data/LPD_competition/npy/train_data_y.npy', arr=img_y)
-
+np.save('../data/LPD_competition/npy/train_data_x3.npy', arr=img)
+np.save('../data/LPD_competition/npy/train_data_y3.npy', arr=img_y)
 
 print("train 끝")
 
@@ -36,12 +34,11 @@ for i in range(72000):
     #image_data = image.resize((128,128))
     image = cv2.imread(filepath) # cv2.IMREAD_GRAYSCALE
 
-    image_sharp = cv2.resize(image, (224, 224))
+    image_sharp = cv2.resize(image, (192, 192))
 
     image_data = np.array(image_sharp)
     img.append(image_data)
 
-np.save('../data/LPD_competition/npy/predict_data.npy', arr=img)
-
+np.save('../data/LPD_competition/npy/predict_data3.npy', arr=img)
 
 print("predict 끝")

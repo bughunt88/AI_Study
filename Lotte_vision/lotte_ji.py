@@ -48,7 +48,6 @@ train_generator = idg.flow(x_train,y_train,batch_size=8, seed = 2048)
 valid_generator = idg2.flow(x_valid,y_valid)
 test_generator = idg1.flow(x_pred)
 
-'''
 mc = ModelCheckpoint('../data/lpd_competition/lotte_0317_3.h5',save_best_only=True, verbose=1)
 
 # efficientnet = EfficientNetB4(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
@@ -68,21 +67,18 @@ model = Model(inputs = mobile.input, outputs = a)
 early_stopping = EarlyStopping(patience= 20)
 lr = ReduceLROnPlateau(patience= 10, factor=0.5)
 
-'''
+
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+learning_history = model.fit_generator(train_generator,epochs=200, steps_per_epoch= len(x_train) / 64, validation_data=valid_generator, callbacks=[early_stopping,lr,mc])
+
+# 체크 포인트 생성
+checkpoint = tf.train.Checkpoint(model)
+save_path = checkpoint.save('../data/lpd_competition')
+model = checkpoint.restore(tf.train.latest_checkpoint('../data/lpd_competition'))
 
 # predict
 from tensorflow.keras.models import Sequential, load_model
-
 # model = load_model('../data/lpd_competition/lotte_0317_3.h5')
-
-
-import tensorflow as tf 
-model = tf.train.latest_checkpoint('../data/lpd_competition/', latest_filename=None)
-
-
-#model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
-#learning_history = model.fit_generator(train_generator,epochs=200, steps_per_epoch= len(x_train) / 64, validation_data=valid_generator, callbacks=[early_stopping,lr,mc])
-
 
 
 tta_steps = 10

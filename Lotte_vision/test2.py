@@ -33,9 +33,12 @@ for i in range(72000):
 
 # print(a)
 
+print(a)
+
+'''
 sub = pd.read_csv('../data/lpd_competition/sample1.csv')
 sub['prediction'] = np.array(a)
 sub.to_csv('../data/lpd_competition/sample_009.csv',index=False)
-
+'''
 
 # 24 => 86점 / 25 => 86.229 / 26 => 86.394 / 27 => 86.461 / 28 => 86.492 / 29 => 86.586 / 35=> 88.419 / 36 => 88.425
