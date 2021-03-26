@@ -53,10 +53,6 @@ sub['test_num'] = np.array(c)
 sub['train_num'] = np.array(a)
 sub['total_num'] = np.array(n)
 
-
 sub
 sub.to_csv('../data/lpd_competition/sample3.csv',index=False)
-
-
-# 24 => 86점 / 25 => 86.229 / 26 => 86.394 / 27 => 86.461 / 28 => 86.492 / 29 => 86.586 / 35=> 88.419 / 36 => 88.425
 
