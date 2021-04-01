@@ -1,19 +1,22 @@
 
-import pymysql
+import db_connect as db
 import numpy as np
 
-connect = pymysql.connect(host='mitzy.c7xaixb8f0ch.ap-northeast-2.rds.amazonaws.com', user='mitzy', password='mitzy1234!', db='mitzy',\
-                          charset='utf8')
-cur = connect.cursor()
 
 
+# db 직접 불러오기 
+'''
 query = "SELECT * FROM time_location_data"
-cur.execute(query)
-select = np.array(cur.fetchall())
+db.cur.execute(query)
+select = np.array(db.cur.fetchall())
 
-connect.commit()
+db.connect.commit()
 
-print(select.shape)	#튜플 형태로 반환받는다.
+print(select.shape)
+'''
+
+# 함수로 불러오기
+print(db.load_table('time_location_data').shape)
 
 
 

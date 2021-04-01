@@ -51,10 +51,7 @@ def solution_model():
     train_generator = # YOUR CODE HERE
 
 
-    model = tf.keras.models.Sequential([
-    # YOUR CODE HERE, BUT END WITH A 3 Neuron Dense, activated by softmax
-        tf.keras.layers.Dense(3, activation='softmax')
-    ])
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(3, activation='softmax')])
 
     return model
 

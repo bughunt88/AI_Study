@@ -29,8 +29,8 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
 def solution_model():
-    #url = 'https://storage.googleapis.com/download.tensorflow.org/data/sarcasm.json'
-    #urllib.request.urlretrieve(url, '../data/sarcasm.json')
+    url = 'https://storage.googleapis.com/download.tensorflow.org/data/sarcasm.json'
+    urllib.request.urlretrieve(url, 'sarcasm.json')
 
     # DO NOT CHANGE THIS CODE OR THE TESTS MAY NOT WORK
     vocab_size = 1000
@@ -45,7 +45,7 @@ def solution_model():
     labels = []
     # YOUR CODE HERE
 
-    with open('../data/sarcasm.json','r') as f:
+    with open('sarcasm.json', 'r') as f:
         datasets = json.load(f)
     for item in datasets:
         sentences.append(item['headline'])

@@ -23,9 +23,9 @@
 #
 # IMPORTANT: Images will be tested as 150x150 with 3 bytes of color depth
 # So ensure that your input layer is designed accordingly, or the tests
-# may fail. 
+# may fail.
 #
-# NOTE THAT THIS IS UNLABELLED DATA. 
+# NOTE THAT THIS IS UNLABELLED DATA.
 # You can use the ImageDataGenerator to automatically label it
 # and we have provided some starter code.
 
@@ -38,68 +38,75 @@ from keras_preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 def solution_model():
-    url = 'https://storage.googleapis.com/download.tensorflow.org/data/rps.zip'
-    urllib.request.urlretrieve(url, '../data/image/rps.zip')
-    local_zip = '../data/image/rps.zip'
+    _TRAIN_URL = "https://storage.googleapis.com/download.tensorflow.org/data/horse-or-human.zip"
+    _TEST_URL = "https://storage.googleapis.com/download.tensorflow.org/data/validation-horse-or-human.zip"
+    urllib.request.urlretrieve(_TRAIN_URL, 'horse-or-human.zip')
+    local_zip = 'horse-or-human.zip'
     zip_ref = zipfile.ZipFile(local_zip, 'r')
-    zip_ref.extractall('../data/image/tmp/')
+    zip_ref.extractall('C:/data/image/horse-or-human/')
+    zip_ref.close()
+    urllib.request.urlretrieve(_TEST_URL, 'testdata.zip')
+    local_zip = 'testdata.zip'
+    zip_ref = zipfile.ZipFile(local_zip, 'r')
+    zip_ref.extractall('C:/data/image/testdata/')
     zip_ref.close()
 
+    # ImageDataGenerator클래스를 사용해 0~255의 픽셀값들을 0,1사이로 조정한다
+    train_datagen = ImageDataGenerator(rescale = 1./255,
+                                    width_shift_range=(-1,1),
+                                    height_shift_range=(-1,1),
+                                    fill_mode='nearest',)
+        #Your code here. Should at least have a rescale. Other parameters can help with overfitting.)
 
-    TRAINING_DIR = "../data/image/tmp/rps/"
-    training_datagen = ImageDataGenerator(
-        # YOUR CODE HERE
-        width_shift_range = 0.1,
-        height_shift_range= 0.1,
-        rescale = 1/255.,
-        validation_split= 0.2
-    )
+    validation_datagen = ImageDataGenerator(rescale= 1./255)
 
-    train_generator = training_datagen.flow_from_directory(
-        directory = TRAINING_DIR,
-        target_size = (150,150),
-        class_mode = 'categorical',
-        batch_size = 32,
-        subset = 'training'
-    )
+    # 모든 이미지의 크기를 300*300으로 바꿔줍니다, 이진분류로 binary 사용
+    train_generator = train_datagen.flow_from_directory('C:/data/image/horse-or-human/',
+                                 batch_size= 32, class_mode= 'binary', target_size= (300,300))
+        #Your Code Here
 
-    test_generator = training_datagen.flow_from_directory(
-        directory = TRAINING_DIR,
-        target_size = (150,150),
-        class_mode = 'categorical',
-        batch_size = 32,
-        subset = 'validation'
-    )
+    validation_generator = validation_datagen.flow_from_directory('C:/data/image/testdata/',
+                                 batch_size=24, class_mode='binary', target_size=(300, 300))
+        #Your Code Here
 
-    # print(train_generator[0][0].shape, train_generator[0][1].shape) (32, 150, 150, 3) (32, 3)
-
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import Conv2D, MaxPool2D, BatchNormalization, Flatten, Dropout, Dense
     model = tf.keras.models.Sequential([
-    # YOUR CODE HERE, BUT END WITH A 3 Neuron Dense, activated by softmax
-        tf.keras.layers.Conv2D(256, (3,3), activation = 'relu', padding = 'valid', input_shape = (150, 150, 3)),
-        tf.keras.layers.MaxPooling2D(3,3),
-        tf.keras.layers.Dropout(0.3),
-        tf.keras.layers.Conv2D(256, (3,3), activation = 'relu', padding = 'valid'),
-        tf.keras.layers.MaxPooling2D(3,3),
-        tf.keras.layers.Conv2D(128, (5,5), activation = 'relu', padding = 'valid'),
-        tf.keras.layers.MaxPooling2D(5,5),
-        tf.keras.layers.Dropout(0.3),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(64, activation = 'relu'),
-        tf.keras.layers.Dense(32, activation = 'relu'),
-        tf.keras.layers.Dense(16, activation = 'relu'),
-        tf.keras.layers.Dense(3, activation='softmax')
+        # Note the input shape specified on your first layer must be (300,300,3)
+        # Your Code here
+        Conv2D(filters=128, kernel_size=3, padding='same', activation='relu', input_shape=(300,300,3)),
+        Conv2D(filters=128, kernel_size=3, activation='relu'),
+        MaxPool2D(3,3),
+        Conv2D(filters=64, kernel_size=3, activation='relu'),
+        Conv2D(filters=64, kernel_size=3, activation='relu'),
+        MaxPool2D(3,3),
+        Flatten(),
+        Dense(64, activation='relu'),
+        # This is the last layer. You should not change this code.
+        tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
-    es = EarlyStopping(patience = 6)
-    lr = ReduceLROnPlateau(factor = 0.25, verbose = 1, patience = 3)
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['acc'])
 
-    model.compile(loss= 'categorical_crossentropy', optimizer = 'adam', metrics = ['acc'])
-    model.fit_generator(train_generator, epochs = 1000, validation_data= test_generator,\
-         steps_per_epoch= np.ceil(2016/32), validation_steps= np.ceil(504/32), callbacks = [es, lr])
+    from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+    import numpy as np
+    stop = EarlyStopping(monitor='val_loss', patience=8, mode='min')
+    lr = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=4, mode='min')
 
-    print(model.evaluate(test_generator, steps = np.ceil(504/32)))
+    model.fit(train_generator, epochs=10,
+              validation_data=validation_generator,
+              callbacks=[stop, lr])
+    # steps_per_epoch=np.ceil(1072/batch) > 1072 = 말500 + 사람572
+    # validation_steps=np.ceil(256/batch) > 256 = 말128 + 사람128
+
+    result = model.evaluate(validation_generator)
+    print('loss: ', result[0], '\nacc: ', result[1])
+
     return model
 
+
+# NOTE: If training is taking a very long time, you should consider setting the batch size
+    # appropriately on the generator, and the steps per epoch in the model.fit() function.
 
 # Note that you'll need to save your model as a .h5 like this.
 # When you press the Submit and Test button, your saved .h5 model will
@@ -107,4 +114,4 @@ def solution_model():
 # and the score will be returned to you.
 if __name__ == '__main__':
     model = solution_model()
-    model.save("../tf_certificate/Category3/mymodel.h5")
+    model.save("mymodel.h5")
