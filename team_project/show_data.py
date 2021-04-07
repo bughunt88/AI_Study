@@ -18,12 +18,14 @@ connect.commit()
 
 x = select[65:,0]
 y = select[65:,1]
+
 '''
 y = list(map(int, y))
 plt.plot(x, y)
 plt.title('Date')
 plt.show()
 '''
+
 # 정규분포
 import matplotlib
 matplotlib.rcParams['axes.unicode_minus'] = False 
