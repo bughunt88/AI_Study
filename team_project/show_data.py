@@ -11,13 +11,13 @@ from sklearn.preprocessing import StandardScaler
 connect = pymysql.connect(host='mitzy.c7xaixb8f0ch.ap-northeast-2.rds.amazonaws.com', user='mitzy', password='mitzy1234!', db='mitzy',\
                           charset='utf8')
 cur = connect.cursor()
-query = "SELECT DATE,SUM(VALUE) FROM `time_location_data` WHERE si = '서울특별시' GROUP BY DATE" #DATE >= '2019-08-01' AND 
+query = "SELECT DATE, VALUE FROM `business_location_data` WHERE si = '서울특별시'" #DATE >= '2019-08-01' AND 
 cur.execute(query)
 select = np.array(cur.fetchall())
 connect.commit()
 
-x = select[65:,0]
-y = select[65:,1]
+x = select[:,0]
+y = select[:,1]
 
 '''
 y = list(map(int, y))
@@ -25,7 +25,7 @@ plt.plot(x, y)
 plt.title('Date')
 plt.show()
 '''
-
+'''
 # 정규분포
 import matplotlib
 matplotlib.rcParams['axes.unicode_minus'] = False 
@@ -34,7 +34,7 @@ plt.figure(figsize=(10,10))
 sns.distplot(y, rug=True,fit=norm) #distplot 히스토그램 정규분포
 plt.title("주문량 분포도",size=15, weight='bold')
 plt.show()
-
+'''
 
 # 표준 정규분포
 import matplotlib
@@ -42,20 +42,15 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 matplotlib.rcParams['font.family'] = "Malgun Gothic" # 한글 변환
 plt.figure(figsize=(10,10))
 
-print(y.shape)
-
 y = y.reshape(-1,1)
 
-print(y)
-
 data_standadized_skl = StandardScaler().fit_transform(y)
-print(data_standadized_skl)
 
 sns.distplot(data_standadized_skl, rug=True,fit=norm) #distplot 히스토그램 정규분포
 plt.title("주문량 분포도",size=15, weight='bold')
 plt.show()
 
-
+'''
 # 이상치 확인
 import numpy as np
 def outliers(data_out):
@@ -80,3 +75,4 @@ stats.probplot(y, plot=plt)
 green_diamond = dict(markerfacecolor='g', marker='D')
 ax1.boxplot(y, flierprops=green_diamond)
 plt.show()
+'''

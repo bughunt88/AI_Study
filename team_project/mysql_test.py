@@ -19,4 +19,3 @@ print(select.shape)
 print(db.load_table('time_location_data').shape)
 
 
-

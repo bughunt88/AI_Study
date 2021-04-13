@@ -10,6 +10,9 @@ connect = pymysql.connect(host='mitzy.c7xaixb8f0ch.ap-northeast-2.rds.amazonaws.
                           charset='utf8')
 cur = connect.cursor()
 
+
+
+
 def load_table(table_name):
     query = "SELECT * FROM " + table_name
     cur.execute(query)
