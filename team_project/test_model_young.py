@@ -1,17 +1,19 @@
 import numpy as np
 import db_connect as db
 import pandas as pd
-import warnings
-warnings.filterwarnings('ignore')
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.metrics import accuracy_score, r2_score
-from sklearn.linear_model import LinearRegression
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
 
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Input
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from sklearn.model_selection import train_test_split, KFold
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+
+#query = "SELECT a.date, IF(DATE LIKE '2019-%', '2019', '2020') AS YEAR , CASE WHEN DATE LIKE '%-01-%' THEN '1' WHEN  DATE LIKE '%-02-%' THEN '2' WHEN  DATE LIKE '%-03-%' THEN '3' WHEN  DATE LIKE '%-04-%' THEN '4'\
+#WHEN  DATE LIKE '%-05-%' THEN '5' WHEN  DATE LIKE '%-06-%' THEN '6' WHEN  DATE LIKE '%-07-%' THEN '7' WHEN  DATE LIKE '%-08-%' THEN '8' WHEN  DATE LIKE '%-09-%' THEN '9' WHEN  DATE LIKE '%-10-%' THEN '10' WHEN  DATE LIKE '%-11-%' THEN '11' ELSE '12' END AS MONTH,\
+#DAYOFWEEK (DATE)AS DAY, a.time, s.index AS category, d.index AS dong, a.value FROM `business_location_data` AS a INNER JOIN `category_table` AS s ON a.category = s.category INNER JOIN `location_table` AS d ON a.dong = d.location WHERE si = '서울특별시'"
 
 query = "SELECT * FROM main_data_table"
 
@@ -30,33 +32,29 @@ db.connect.commit()
 
 
 
-train_value = df[ '2020-05-01' >= df['date'] ]
+# train, test 나누기
 
-x_train = train_value.iloc[:100,1:-1]
-y_train = train_value.iloc[:100,-1]
-
-test_value = df[df['date'] >=  '2020-05-01']
-
-x_test = test_value.iloc[:100,1:-1]
-y_test = test_value.iloc[100:,-1]
-x_test = x_test.dropna()    # 결측값 제거
-x_train = x_train.dropna()    # 결측값 제거
-y_test = y_test.dropna()    # 결측값 제거
-y_train = y_train.dropna()    # 결측값 제거
-
-# print(x_test.head())
-print(y_test.head())
+train_value = df[ '2020-09-01' >= df['date'] ]
 
 x_train = train_value.iloc[:,1:-1].to_numpy()
 y_train = train_value.iloc[:,-1].to_numpy()
+
+test_value = df[df['date'] >=  '2020-09-01']
+
 x_test = test_value.iloc[:,1:-1].to_numpy()
 y_test = test_value.iloc[:,-1].to_numpy()
+
 
 # StandardScaler
 scaler = StandardScaler()
 scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
+
+from sklearn.preprocessing import OneHotEncoder
+encoder = OneHotEncoder()
+y_train = encoder.fit_transform(y_train.reshape(-1,1)).toarray()
+y_test = encoder.fit_transform(y_test.reshape(-1,1)).toarray()
 
 
 def RMSE(y_test, y_predict): 

@@ -60,20 +60,12 @@ kfold = KFold(n_splits=5, shuffle=True)
 
 # 훈련 loop
 scalers = np.array([MinMaxScaler(), StandardScaler()])
-models = np.array([DecisionTreeRegressor(),XGBRegressor(), RandomForestRegressor()])
-# , KNeighborsRegressor()
+models = np.array([DecisionTreeRegressor(), RandomForestRegressor()])
+#  XGBRegressor(),
 
 result_list = []
 for j in scalers:
     
-    # x 전처리
-    scaler = j
-    scaler.fit(x_train)
-    x_train = scaler.transform(x_train)
-    x_test = scaler.transform(x_test)
-
-    print('==========================================', scaler)
-
     for i in models:
         print(i,'   :')
 

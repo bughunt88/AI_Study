@@ -11,14 +11,9 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 
 # db 직접 불러오기 
 
-'''
 query = "SELECT a.date, IF(DATE LIKE '2019-%', '2019', '2020') AS YEAR , CASE WHEN DATE LIKE '%-01-%' THEN '1' WHEN  DATE LIKE '%-02-%' THEN '2' WHEN  DATE LIKE '%-03-%' THEN '3' WHEN  DATE LIKE '%-04-%' THEN '4'\
 WHEN  DATE LIKE '%-05-%' THEN '5' WHEN  DATE LIKE '%-06-%' THEN '6' WHEN  DATE LIKE '%-07-%' THEN '7' WHEN  DATE LIKE '%-08-%' THEN '8' WHEN  DATE LIKE '%-09-%' THEN '9' WHEN  DATE LIKE '%-10-%' THEN '10' WHEN  DATE LIKE '%-11-%' THEN '11' ELSE '12' END AS MONTH,\
 DAYOFWEEK (DATE)AS DAY, a.time, s.index AS category, d.index AS dong, a.value FROM `business_location_data` AS a INNER JOIN `category_table` AS s ON a.category = s.category INNER JOIN `location_table` AS d ON a.dong = d.location WHERE si = '서울특별시'"
-'''
-
-query = "select * from main_data_table"
-
 
 db.cur.execute(query)
 dataset = np.array(db.cur.fetchall())
@@ -88,7 +83,7 @@ for train_index, test_index in kfold.split(x_train):
 
 
     model.compile(loss='mse', optimizer='adam', metrics='mae')
-    model.fit(x_train, y_train, epochs=100, batch_size=32, validation_data=(x_val,y_val), callbacks=[es,reduce_lr] )
+    model.fit(x_train, y_train, epochs=1000, batch_size=32, validation_data=(x_val,y_val), callbacks=[es,reduce_lr] )
 
     # 4. 평가, 예측
 
@@ -113,16 +108,17 @@ for train_index, test_index in kfold.split(x_train):
 # RMSE :  3.8830578
 # R2 :  -0.0008374555628862801
 
+
 # 0 있음 true
 # loss : 12.894530296325684
 # RMSE :  3.882204232128345
 # R2 :  -0.00039758554976820903
 
 
-# 0 없음  True
-# loss : 26.874086380004883
-# RMSE :  5.593873029552887
-# R2 :  0.7244879873705175
+# 0 없음 false
+# loss : 37.688934326171875
+# RMSE :  6.464159371948985
+# R2 :  0.6320918225289985
 
 
 # 0 없음  True
