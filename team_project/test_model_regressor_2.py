@@ -11,12 +11,15 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 
 # db 직접 불러오기 
 
+
+# 0 없다
 '''
 query = "SELECT a.date, IF(DATE LIKE '2019-%', '2019', '2020') AS YEAR , CASE WHEN DATE LIKE '%-01-%' THEN '1' WHEN  DATE LIKE '%-02-%' THEN '2' WHEN  DATE LIKE '%-03-%' THEN '3' WHEN  DATE LIKE '%-04-%' THEN '4'\
 WHEN  DATE LIKE '%-05-%' THEN '5' WHEN  DATE LIKE '%-06-%' THEN '6' WHEN  DATE LIKE '%-07-%' THEN '7' WHEN  DATE LIKE '%-08-%' THEN '8' WHEN  DATE LIKE '%-09-%' THEN '9' WHEN  DATE LIKE '%-10-%' THEN '10' WHEN  DATE LIKE '%-11-%' THEN '11' ELSE '12' END AS MONTH,\
 DAYOFWEEK (DATE)AS DAY, a.time, s.index AS category, d.index AS dong, a.value FROM `business_location_data` AS a INNER JOIN `category_table` AS s ON a.category = s.category INNER JOIN `location_table` AS d ON a.dong = d.location WHERE si = '서울특별시'"
 '''
 
+# 0 있다
 query = "select * from main_data_table"
 
 
@@ -31,7 +34,6 @@ column_name = ['date', 'year', 'month', 'day', 'time', 'category', 'dong', 'valu
 df = pd.DataFrame(dataset, columns=column_name)
 
 db.connect.commit()
-
 
 # train, test 나누기
 
@@ -53,14 +55,18 @@ kfold = KFold(n_splits=5, shuffle=True)
 
 num = 0 
 
+
+r2_list = []
+rmse_list = []
+loss_list = []
+
+
 for train_index, test_index in kfold.split(x_train): 
 
+    x_train1, x_test1 = x_train[train_index], x_train[test_index]
+    y_train1, y_test1 = y_train[train_index], y_train[test_index]
 
-    x_train, x_test = x_train[train_index], x_train[test_index]
-    y_train, y_test = y_train[train_index], y_train[test_index]
-
-    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  train_size=0.8, random_state = 77, shuffle=False ) 
-
+    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.8, random_state = 77, shuffle=True ) 
     
     # 2. 모델구성
 
@@ -75,27 +81,18 @@ for train_index, test_index in kfold.split(x_train):
 
     # 3. 컴파일 훈련
 
-
-
     modelpath = '../data/modelcheckpoint/team_'+str(num)+'.hdf5'
     es= EarlyStopping(monitor='val_loss', patience=10)
 
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
 
-    
-    print(x_train)
-    print(x_test.shape)
-
-
     model.compile(loss='mse', optimizer='adam', metrics='mae')
-    model.fit(x_train, y_train, epochs=100, batch_size=32, validation_data=(x_val,y_val), callbacks=[es,reduce_lr] )
+    model.fit(x_train1, y_train1, epochs=100, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr] )
 
     # 4. 평가, 예측
 
-    loss, mae = model.evaluate(x_test, y_test, batch_size=32)
+    loss, mae = model.evaluate(x_test1, y_test1, batch_size=64)
     y_predict = model.predict(x_pred)
-
-    print(loss)
 
     # RMSE 
     print("RMSE : ", RMSE(y_pred, y_predict))
@@ -104,29 +101,38 @@ for train_index, test_index in kfold.split(x_train):
     r2 = r2_score(y_pred, y_predict)
     print("R2 : ", r2)
 
+    r2_list.append(r2_score(y_pred, y_predict))
+    rmse_list.append(RMSE(y_pred, y_predict))
+    loss_list.append(loss)
+
     num += 1
 
 
-
-# 0 있음 false
-# loss : 12.690013885498047
-# RMSE :  3.8830578
-# R2 :  -0.0008374555628862801
-
-# 0 있음 true
-# loss : 12.894530296325684
-# RMSE :  3.882204232128345
-# R2 :  -0.00039758554976820903
+print("r2 : ",r2_list)
+print("RMSE : ",rmse_list)
+print("loss : ",loss_list)
 
 
-# 0 없음  True
-# loss : 26.874086380004883
-# RMSE :  5.593873029552887
-# R2 :  0.7244879873705175
+
+'''
+from matplotlib import pyplot as plt
+pred_test = model.predict(X_test)
+plt.plot(pred_test,'r')
+plt.plot(y_test,'g')
+'''
 
 
-# 0 없음  True
-# loss : 26.874086380004883
-# RMSE :  5.593873029552887
-# R2 :  0.7244879873705175
 
+
+# 0 있음  false
+# r2 :  [0.29914470028609685, 0.4080221460750376, -0.0004918308414794126, 0.6231943856732425, 0.5481310630025362]
+# RMSE :  [3.2494229398004624, 2.986378093796016, 3.882387094851552, 2.382597840303829, 2.6091455397497]
+# loss :  [8.222070693969727, 7.295978546142578, 12.393566131591797, 4.843005657196045, 5.948018550872803]
+
+
+
+# 0 있음  True
+
+#r2 :  [0.27917209709615365, 0.26270140033230116, 0.29778002287880656, 0.5253973514193098, 0.6370045705720824]
+#RMSE :  [3.2953978654867164, 3.3328346345375195, 3.252584974492288, 2.673973752882124, 2.3385283521181988]
+#loss :  [8.699811935424805, 8.702920913696289, 8.634782791137695, 6.129004001617432, 4.91642951965332]
