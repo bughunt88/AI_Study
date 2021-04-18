@@ -71,16 +71,17 @@ for train_index, test_index in kfold.split(x_train):
     print(y_train1.shape)
     print(y_train1)
 
-    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.9, random_state = 77, shuffle=True ) 
+    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.9, random_state = 77, shuffle=False ) 
     
     # 2. 모델구성
 
     model = Sequential()
     model.add(LSTM(128, activation='relu' ,input_shape=(6,1))) 
+    model.add(LSTM(64, activation='relu')) 
     model.add(Dense(64,activation='relu'))
     model.add(Dense(64,activation='relu'))
-    model.add(Dense(64))
-    model.add(Dense(64))
+    model.add(Dense(32))
+    model.add(Dense(32))
     model.add(Dense(1)) 
 
     # 3. 컴파일 훈련
@@ -119,4 +120,14 @@ print("r2 : ",r2_list)
 print("RMSE : ",rmse_list)
 print("loss : ",loss_list)
 
+'''
+LSTM 윈도우 없음 True
+r2 :  [-0.0002796697158140571, -0.0004090043058784243, -0.000370540668791719]
+RMSE :  [3.881975429677031, 3.8822263882278, 3.8821517557616914]
+loss :  [12.300849914550781, 12.529807090759277, 12.243167877197266]
 
+LSTM 윈도우 없음 0.9 false
+r2 :  [-0.0005065010569298423, -0.0004432271097196683, -0.00040907636004416936]
+RMSE :  [3.8824155584754445, 3.882292790836807, 3.882226528035907]
+loss :  [12.459065437316895, 12.402216911315918, 12.2125883102417]
+'''
