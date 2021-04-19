@@ -11,6 +11,14 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 
 # db 직접 불러오기 
 
+
+def split_x(seq, size):
+    aaa = []
+    for i in range(len(seq) - size + 1):
+        subset = seq[i : (i+size)]
+        aaa.append(subset)
+    return np.array(aaa)
+
 '''
 query = "SELECT a.date, IF(DATE LIKE '2019-%', '2019', '2020') AS YEAR , CASE WHEN DATE LIKE '%-01-%' THEN '1' WHEN  DATE LIKE '%-02-%' THEN '2' WHEN  DATE LIKE '%-03-%' THEN '3' WHEN  DATE LIKE '%-04-%' THEN '4'\
 WHEN  DATE LIKE '%-05-%' THEN '5' WHEN  DATE LIKE '%-06-%' THEN '6' WHEN  DATE LIKE '%-07-%' THEN '7' WHEN  DATE LIKE '%-08-%' THEN '8' WHEN  DATE LIKE '%-09-%' THEN '9' WHEN  DATE LIKE '%-10-%' THEN '10' WHEN  DATE LIKE '%-11-%' THEN '11' ELSE '12' END AS MONTH,\
@@ -40,6 +48,12 @@ train_value = df[ '2020-09-01' >= df['date'] ]
 x_train = train_value.iloc[:,1:-1].astype('int64').to_numpy()
 y_train = train_value.iloc[:,-1].astype('int64').to_numpy()
 
+
+size = 59136 #30
+total_data = split_x(x_train,size)
+
+
+
 test_value = df[df['date'] >=  '2020-09-01']
 
 x_pred = test_value.iloc[:,1:-1].astype('int64').to_numpy()
@@ -63,12 +77,12 @@ for train_index, test_index in kfold.split(x_train):
     x_train1, x_test1 = x_train[train_index], x_train[test_index]
     y_train1, y_test1 = y_train[train_index], y_train[test_index]
 
-    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.8, random_state = 77, shuffle=True ) 
+    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.9, random_state = 77, shuffle=True ) 
     
     # 2. 모델구성
 
     model = Sequential()
-    model.add(Conv1D(filters=64, kernel_size=2, padding='same', activation='relu', input_shape=(3,1))) 
+    model.add(Conv1D(filters=64, kernel_size=2, padding='same', activation='relu', input_shape=(6,1))) 
     model.add(MaxPooling1D(pool_size=1))
     model.add(Dropout(0.2))
     model.add(Conv1D(filters=52, kernel_size=2, padding='same', activation='relu')) 

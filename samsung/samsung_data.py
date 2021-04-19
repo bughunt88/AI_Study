@@ -58,9 +58,6 @@ y_data = total_data
 
 
 
-print(y_data[-2][0])
-
-
 def split_x(seq, size):
 
     aaa = []
@@ -70,6 +67,13 @@ def split_x(seq, size):
     return np.array(aaa)
 
 total_data = split_x(total_data,size)
+
+
+print("@@@@@@@@@@@@@@@@@@@")
+print(total_data)
+print(total_data.shape)
+print("@@@@@@@@@@@@@@@@@@@")
+
 
 
 x = total_data[:-2,:size, :]
