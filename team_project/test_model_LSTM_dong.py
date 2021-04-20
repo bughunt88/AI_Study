@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 
 # db 직접 불러오기 
 
-size = 2688 #30
+#size = 2688 #30
 
 def RMSE(y_test, y_predict): 
     return np.sqrt(mean_squared_error(y_test, y_predict)) 
@@ -69,8 +69,20 @@ for main_num in range(1):
 
     kfold = KFold(n_splits=3, shuffle=True)
 
-    x_train, y_train = split_xy(train_value, 3696, 3696)
-    x_pred, y_pred = split_xy(test_value, 3696, 3696)
+    x_train, y_train = split_xy(train_value, 2688, 2688)
+    x_pred, y_pred = split_xy(test_value, 2688, 2688)
+
+    print(x_train.shape)
+    print(y_train.shape)
+
+    print(y_pred.shape)
+
+
+    print("@@@@@")
+
+    print(x_pred.shape)
+    print(y_pred.shape)
+
 
     # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
     # x_pred = x_pred.reshape(x_pred.shape[0], x_pred.shape[1], 1)
@@ -103,10 +115,12 @@ for main_num in range(1):
         modelpath = '../data/modelcheckpoint/team_LSTM1_'+str(num)+'.hdf5'
         es= EarlyStopping(monitor='val_loss', patience=10)
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
-        cp =ModelCheckpoint(filepath='modelpath', monitor='val_loss', save_best_only=True, mode='auto')
+       #cp =ModelCheckpoint(filepath='modelpath', save_best_only=True)
+
+        mc = ModelCheckpoint('../data/modelcheckpoint/lotte_0317_2.h5',save_best_only=True, verbose=1)
 
         model.compile(loss='mse', optimizer='adam', metrics='mae')
-        model.fit(x_train1, y_train1, epochs=100, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
+        model.fit(x_train1, y_train1, epochs=1000, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,mc] )
 
         # 4. 평가, 예측
 

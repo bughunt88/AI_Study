@@ -11,7 +11,6 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 
 # db 직접 불러오기 
 
-
 def split_x(seq, size):
     aaa = []
     for i in range(len(seq) - size + 1):

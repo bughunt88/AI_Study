@@ -2,6 +2,7 @@ import numpy as np
 import db_connect as db
 import pandas as pd
 import timeit
+import tensorflow as tf
 
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Dense, Input, Dropout
@@ -58,6 +59,10 @@ r2_list = []
 rmse_list = []
 loss_list = []
 
+
+leaky_relu = tf.nn.leaky_relu
+
+
 for train_index, test_index in kfold.split(x_train): 
 
     print(train_index.shape)
@@ -70,18 +75,19 @@ for train_index, test_index in kfold.split(x_train):
 
     # 2. 모델구성
 
+
     model = Sequential()
-    model.add(Dense(1024, activation='swish' ,input_dim= 6))
+    model.add(Dense(1024, activation=leaky_relu ,input_dim= 6))
     model.add(Dropout(0.2))
-    model.add(Dense(256,activation='swish'))
+    model.add(Dense(256,activation=leaky_relu))
     model.add(Dropout(0.2))
-    model.add(Dense(64,activation='swish'))
-    model.add(Dense(16,activation='swish'))
+    model.add(Dense(64,activation=leaky_relu))
+    model.add(Dense(16,activation=leaky_relu))
     model.add(Dense(1)) 
 
     # 3. 컴파일 훈련
 
-    modelpath = '../data/modelcheckpoint/team1_'+str(num)+'.hdf5'
+    modelpath = '../data/modelcheckpoint/team3_'+str(num)+'.hdf5'
 
     print(modelpath)
 
@@ -92,7 +98,7 @@ for train_index, test_index in kfold.split(x_train):
     #(2784460,)
     #(696116,)
 
-    model.compile(loss='mse', optimizer='adam', metrics='mae')
+    model.compile(loss='mse', optimizer='AdaDelta', metrics='mae')
     model.fit(x_train1, y_train1, epochs=1000, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
 
     # 4. 평가, 예측
@@ -126,7 +132,9 @@ print("loss : ",loss_list)
 terminate_time = timeit.default_timer() # 종료 시간 체크  
 print("%f초 걸렸습니다." % (terminate_time - start_time))
 
-# adam swish model
-#r2 :  [-0.0001856230585355334, 0.6549267089173891, -0.00029526412237523836]
-#RMSE :  [3.8817929330185197, 2.2800676574086784, 3.882005689647818]
-#loss :  [12.33884048461914, 5.4566802978515625, 12.25214672088623]
+# adam leaky_relu model
+
+#r2 :  [0.7450924574901066, 0.7397540193058983, 0.7450179506560171]
+#RMSE :  [5.380636803283896, 5.436687246099586, 5.381423098031445]
+#loss :  [22.235332489013672, 22.780006408691406, 21.7102108001709]
+#6010.092551초 걸렸습니다.
