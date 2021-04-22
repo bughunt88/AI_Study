@@ -75,7 +75,6 @@ for train_index, test_index in kfold.split(x_train):
 
     # 2. 모델구성
 
-
     model = Sequential()
     model.add(Dense(1024, activation=leaky_relu ,input_dim= 6))
     model.add(Dropout(0.2))
@@ -88,8 +87,6 @@ for train_index, test_index in kfold.split(x_train):
     # 3. 컴파일 훈련
 
     modelpath = '../data/modelcheckpoint/team2_'+str(num)+'.hdf5'
-
-    print(modelpath)
 
     es= EarlyStopping(monitor='val_loss', patience=10)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
@@ -121,9 +118,6 @@ for train_index, test_index in kfold.split(x_train):
     rmse_list.append(RMSE(y_pred, y_predict))
     loss_list.append(loss)
 
-
-
-
 print("LSTM 윈도우 없음")
 print("r2 : ",r2_list)
 print("RMSE : ",rmse_list)
@@ -134,7 +128,7 @@ print("%f초 걸렸습니다." % (terminate_time - start_time))
 
 # adam leaky_relu model
 
-#r2 :  [0.7450924574901066, 0.7397540193058983, 0.7450179506560171]
-#RMSE :  [5.380636803283896, 5.436687246099586, 5.381423098031445]
-#loss :  [22.235332489013672, 22.780006408691406, 21.7102108001709]
-#6010.092551초 걸렸습니다.
+#r2 :  [0.7641982444641164, 0.7740624136864336, 0.7740583450104513]
+#RMSE :  [1.884801324460763, 1.8449572340027856, 1.8449738458899765]
+#loss :  [2.7422962188720703, 2.5902903079986572, 2.7003586292266846]
+#32956.933020초 걸렸습니다.

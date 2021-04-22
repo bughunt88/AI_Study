@@ -4,6 +4,8 @@ import pandas as pd
 import timeit
 import tensorflow as tf
 
+import model_data as md
+
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Dense, Input, Dropout
 from sklearn.metrics import mean_squared_error
@@ -55,72 +57,62 @@ num = 0
 
 start_time = timeit.default_timer()
 
+model_list = []
 r2_list = []
 rmse_list = []
 loss_list = []
 
+#leaky_relu = tf.nn.leaky_relu
 
-leaky_relu = tf.nn.leaky_relu
+for model_num in range(2):
+    
 
+    for train_index, test_index in kfold.split(x_train): 
 
-for train_index, test_index in kfold.split(x_train): 
+        print(train_index.shape)
+        print(test_index.shape)
 
-    print(train_index.shape)
-    print(test_index.shape)
+        x_train1, x_test1 = x_train[train_index], x_train[test_index]
+        y_train1, y_test1 = y_train[train_index], y_train[test_index]
 
-    x_train1, x_test1 = x_train[train_index], x_train[test_index]
-    y_train1, y_test1 = y_train[train_index], y_train[test_index]
+        x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.9, random_state = 77, shuffle=True ) 
 
-    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.9, random_state = 77, shuffle=True ) 
+        # 2. 모델구성
+            
+        model = md.build_model(model_num)
 
-    # 2. 모델구성
+        # 3. 컴파일 훈련
 
-    model = Sequential()
-    model.add(Dense(1024, activation=leaky_relu ,input_dim= 6))
-    model.add(Dropout(0.2))
-    model.add(Dense(256,activation=leaky_relu))
-    model.add(Dropout(0.2))
-    model.add(Dense(64,activation=leaky_relu))
-    model.add(Dense(16,activation=leaky_relu))
-    model.add(Dense(1)) 
+        modelpath = '../data/modelcheckpoint/team_'+str(model_num)+'_'+str(num)+'.hdf5'
+        es= EarlyStopping(monitor='val_loss', patience=10)
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
+        cp =ModelCheckpoint(filepath=modelpath, save_best_only=True)
 
-    # 3. 컴파일 훈련
+        model.fit(x_train1, y_train1, epochs=1000, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
 
-    modelpath = '../data/modelcheckpoint/team3_'+str(num)+'.hdf5'
+        # 4. 평가, 예측
 
-    print(modelpath)
+        loss, mae = model.evaluate(x_test1, y_test1, batch_size=64)
+        y_predict = model.predict(x_pred)
 
-    es= EarlyStopping(monitor='val_loss', patience=10)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
-    cp =ModelCheckpoint(filepath=modelpath, save_best_only=True)
+        print("loss : ", loss)
 
-    #(2784460,)
-    #(696116,)
+        # RMSE 
+        print("RMSE : ", RMSE(y_pred, y_predict))
 
-    model.compile(loss='mse', optimizer='AdaDelta', metrics='mae')
-    model.fit(x_train1, y_train1, epochs=1000, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
+        # R2 만드는 법
+        r2 = r2_score(y_pred, y_predict)
+        print("R2 : ", r2)
 
-    # 4. 평가, 예측
+        num += 1
 
-    loss, mae = model.evaluate(x_test1, y_test1, batch_size=64)
-    y_predict = model.predict(x_pred)
-
-    print(loss)
-
-    # RMSE 
-    print("RMSE : ", RMSE(y_pred, y_predict))
-
-    # R2 만드는 법
-    r2 = r2_score(y_pred, y_predict)
-    print("R2 : ", r2)
-
-    num += 1
-
-    r2_list.append(r2_score(y_pred, y_predict))
-    rmse_list.append(RMSE(y_pred, y_predict))
-    loss_list.append(loss)
-
-
+        r2_list.append(r2_score(y_pred, y_predict))
+        rmse_list.append(RMSE(y_pred, y_predict))
+        loss_list.append(loss)
+    
+    r2_list.append("||")
+    rmse_list.append("||")
+    loss_list.append("||")
 
 
 print("LSTM 윈도우 없음")
@@ -132,8 +124,3 @@ terminate_time = timeit.default_timer() # 종료 시간 체크
 print("%f초 걸렸습니다." % (terminate_time - start_time))
 
 # adam leaky_relu model
-
-#r2 :  [0.7450924574901066, 0.7397540193058983, 0.7450179506560171]
-#RMSE :  [5.380636803283896, 5.436687246099586, 5.381423098031445]
-#loss :  [22.235332489013672, 22.780006408691406, 21.7102108001709]
-#6010.092551초 걸렸습니다.
