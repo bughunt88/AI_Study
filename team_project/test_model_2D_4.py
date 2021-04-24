@@ -6,13 +6,10 @@ import tensorflow as tf
 
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Dense, Input, LSTM, Conv2D, Flatten
-from tensorflow.keras.layers import Conv1D, MaxPooling1D, Dense, Flatten, Dropout,LSTM, Conv2D,Input,Activation
-
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split, KFold
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-import tensorflow.keras.backend as K
 
 # db 직접 불러오기 
 
@@ -68,9 +65,6 @@ loss_list = []
 
 leaky_relu = tf.nn.leaky_relu
 
-def mish(x):
-    return x * K.tanh(K.softplus(x))
-
 for train_index, test_index in kfold.split(x_train): 
 
     x_train1, x_test1 = x_train[train_index], x_train[test_index]
@@ -83,17 +77,14 @@ for train_index, test_index in kfold.split(x_train):
     
     # 2. 모델구성
 
-   # 2. 모델구성
-    inputs = Input(shape = (6,1,1),name = 'input')
-    x = Conv2D(filters=1024,kernel_size=(2,2), padding='same', strides=(2,2) )(inputs)
-    x = Activation(mish)(x)
-    x = Conv2D(filters=512,kernel_size=(2,2), padding='same', strides=(2,2) )(x)
-    x = Activation(mish)(x)
-    x = Flatten()(x)
-    x = Dense(512)(x)
-    x = Activation(mish)(x)
-    outputs = Dense(1)(x)
-    model = Model(inputs=inputs,outputs=outputs)
+    model=Sequential()
+    model.add(Conv2D(filters=1024, kernel_size=(2,2), padding='same',
+                    strides=(2,2) , input_shape=(6,1,1), activation=leaky_relu))
+    model.add(Conv2D(filters=512, kernel_size=(2,2), padding='same',
+                    strides=(2,2), activation=leaky_relu))
+    model.add(Flatten())
+    model.add(Dense(512, activation=leaky_relu))
+    model.add(Dense(1)) 
 
     # 3. 컴파일 훈련
 
