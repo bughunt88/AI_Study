@@ -110,6 +110,7 @@ for main_num in range(1):
         inputs = Input(shape = (x_train1.shape[1],x_train1.shape[2]),name = 'input')
         x = LSTM(512)(inputs)
         x = Activation(mish)(x)
+        x = Flatten()(x)
         x = Dense(512)(x)
         x = Activation(mish)(x)
         x = Dense(256)(x)
@@ -118,7 +119,7 @@ for main_num in range(1):
         x = Activation(mish)(x)
         x = Dense(16)(x)
         x = Activation(mish)(x)
-        outputs = Dense(1)(x)
+        outputs = Dense(2688)(x)
         model = Model(inputs=inputs,outputs=outputs)
 
         # 3. 컴파일 훈련
@@ -129,11 +130,11 @@ for main_num in range(1):
         cp =ModelCheckpoint(filepath=modelpath, save_best_only=True)
 
         model.compile(loss='mse', optimizer='RMSprop', metrics='mae')
-        model.fit(x_train1, y_train1, epochs=1000, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
+        model.fit(x_train1, y_train1, epochs=1000, batch_size=16, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
 
         # 4. 평가, 예측
 
-        loss, mae = model.evaluate(x_test1, y_test1, batch_size=64)
+        loss, mae = model.evaluate(x_test1, y_test1, batch_size=16)
         y_predict = model.predict(x_pred)
 
         print(x_test1.shape)
