@@ -2,17 +2,21 @@ import numpy as np
 import db_connect as db
 import pandas as pd
 import timeit
+import tensorflow as tf
 
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Dense, Flatten, Dropout,LSTM, Conv2D,Input,Activation, LSTM
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, Input, LSTM
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split, KFold
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+import tensorflow.keras.backend as K
 
 # db 직접 불러오기 
 
-#size = 2688 #30
+main_r2_list = []
+main_rmse_list = []
+main_loss_list = []
 
 def RMSE(y_test, y_predict): 
     return np.sqrt(mean_squared_error(y_test, y_predict)) 
@@ -66,23 +70,10 @@ for main_num in range(1):
     # x_pred = test_value.iloc[:,1:-1].astype('int64').to_numpy()
     # y_pred = test_value.iloc[:,-1].astype('int64').to_numpy()
 
-
     kfold = KFold(n_splits=3, shuffle=True)
 
     x_train, y_train = split_xy(train_value, 2688, 2688)
     x_pred, y_pred = split_xy(test_value, 2688, 2688)
-
-    print(x_train.shape)
-    print(y_train.shape)
-
-    print(y_pred.shape)
-
-
-    print("@@@@@")
-
-    print(x_pred.shape)
-    print(y_pred.shape)
-
 
     # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1)
     # x_pred = x_pred.reshape(x_pred.shape[0], x_pred.shape[1], 1)
@@ -92,6 +83,11 @@ for main_num in range(1):
     rmse_list = []
     loss_list = []
 
+    print(y_pred.shape)
+    
+    def mish(x):
+        return x * K.tanh(K.softplus(x))
+
     for train_index, test_index in kfold.split(x_train): 
 
         x_train1, x_test1 = x_train[train_index], x_train[test_index]
@@ -100,7 +96,7 @@ for main_num in range(1):
         x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.9, random_state = 77, shuffle=True ) 
         
         # 2. 모델구성
-
+        '''
         model = Sequential()
         model.add(LSTM(128, activation='relu' ,input_shape=(x_train1.shape[1],x_train1.shape[2]))) 
         model.add(Dense(64,activation='relu'))
@@ -109,25 +105,45 @@ for main_num in range(1):
         model.add(Dense(32,activation='relu'))
         model.add(Dense(32,activation='relu'))
         model.add(Dense(1)) 
+        '''
+
+        inputs = Input(shape = (x_train1.shape[1],x_train1.shape[2]),name = 'input')
+        x = LSTM(512)(inputs)
+        x = Activation(mish)(x)
+        x = Dense(512)(x)
+        x = Activation(mish)(x)
+        x = Dense(256)(x)
+        x = Activation(mish)(x)
+        x = Dense(64)(x)
+        x = Activation(mish)(x)
+        x = Dense(16)(x)
+        x = Activation(mish)(x)
+        outputs = Dense(1)(x)
+        model = Model(inputs=inputs,outputs=outputs)
 
         # 3. 컴파일 훈련
 
-        modelpath = '../data/modelcheckpoint/team_LSTM1_'+str(num)+'.hdf5'
+        modelpath = '../data/modelcheckpoint/team_LSTM2_'+str(num)+'.hdf5'
         es= EarlyStopping(monitor='val_loss', patience=10)
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
-       #cp =ModelCheckpoint(filepath='modelpath', save_best_only=True)
+        cp =ModelCheckpoint(filepath=modelpath, save_best_only=True)
 
-        mc = ModelCheckpoint('../data/modelcheckpoint/lotte_0317_2.h5',save_best_only=True, verbose=1)
-
-        model.compile(loss='mse', optimizer='adam', metrics='mae')
-        model.fit(x_train1, y_train1, epochs=1, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,mc] )
+        model.compile(loss='mse', optimizer='RMSprop', metrics='mae')
+        model.fit(x_train1, y_train1, epochs=1000, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
 
         # 4. 평가, 예측
 
         loss, mae = model.evaluate(x_test1, y_test1, batch_size=64)
         y_predict = model.predict(x_pred)
 
-        print(loss)
+        print(x_test1.shape)
+        print(y_test1.shape)
+        print("###############")
+        #print(loss)
+        print(x_pred.shape)
+        print(y_pred.shape)
+        print(y_predict.shape)
+        print(y_predict)
 
         # RMSE 
         print("RMSE : ", RMSE(y_pred, y_predict))
@@ -143,20 +159,19 @@ for main_num in range(1):
         loss_list.append(loss)
 
 
-    print("LSTM 윈도우 없음")
     print("r2 : ",r2_list)
     print("RMSE : ",rmse_list)
     print("loss : ",loss_list)
 
+    main_r2_list.append(r2_list)
+    main_rmse_list.append(rmse_list)
+    main_loss_list.append(loss_list)
 
 terminate_time = timeit.default_timer() # 종료 시간 체크  
 print("%f초 걸렸습니다." % (terminate_time - start_time))
 
-
-'''
-LSTM 2개 윈도우 없음
-r2 :  [-0.0006272980157535635, -0.0001606461551999505, 0.7029568019231744]
-RMSE :  [3.8826499246874193, 3.881744464129382, 2.1154456272782514]
-loss :  [12.228251457214355, 12.480032920837402, 2.2087907791137695]
-'''
+print("main_list")
+print("main_r2 : ",main_r2_list)
+print("main_RMSE : ",main_rmse_list)
+print("main_loss : ",main_loss_list)
 
