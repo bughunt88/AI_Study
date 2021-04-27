@@ -37,9 +37,13 @@ from tensorflow.keras.models import load_model
 
 result = 0
 
-for main_num in range(5): 
 
-    filepath_cp = f'../data/modelcheckpoint/titanic_1_'+str(main_num)+'.hdf5'
+check = 24
+
+
+for main_num in range(check): 
+
+    filepath_cp = f'../data/modelcheckpoint/titanic_2_'+str(main_num)+'.hdf5'
     model = load_model(filepath_cp, compile = False)
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
@@ -47,11 +51,11 @@ for main_num in range(5):
 
     result += y_predict
 
-result = result / 5
+result = result / check
 
 y_pred_r = np.where(result<0.5,0,1)
 
 sub = pd.read_csv('../data/titanic/sample_submission.csv')
 sub['Survived'] = y_pred_r
-sub.to_csv('../data/titanic/sample_002.csv',index=False)
+sub.to_csv('../data/titanic/sample_003.csv',index=False)
 

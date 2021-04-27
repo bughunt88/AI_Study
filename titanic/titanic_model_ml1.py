@@ -47,8 +47,8 @@ t_main_data = t_main_data.astype({"Age": "int64"})
 
 main_data =  t_main_data.to_numpy()
 
-y_train = main_data[:,0]
-x_train = main_data[:,1:]
+y_train1 = main_data[:,0]
+x_train1 = main_data[:,1:]
 
 ###### 프레딕 데이터 #######
 
@@ -71,61 +71,63 @@ x_pred =  p_main_data.to_numpy()
 
 ################
 
-kfold = KFold(n_splits=5, shuffle=True)
+kfold = KFold(n_splits=3, shuffle=True)
 
 num = 0 
-result = 0
 
 rmse_list = []
 loss_list = []
 
-for train_index, test_index in kfold.split(x_train): 
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder, MinMaxScaler
+from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
+import catboost as ctb
 
-    x_train1, x_test1 = x_train[train_index], x_train[test_index]
-    y_train1, y_test1 = y_train[train_index], y_train[test_index]
+N_ESTIMATORS = 1000
+N_SPLITS = 10
+SEED = 2021
+EARLY_STOPPING_ROUNDS = 20
+VERBOSE = 0
 
-    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1,  train_size=0.9, random_state = 77, shuffle=True ) 
+skf = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=SEED)
 
-    scaler = MinMaxScaler()
-    scaler.fit(x_train1)
-    x_train1 = scaler.transform(x_train1)
-    x_test1 = scaler.transform(x_test1)
-    x_pred = scaler.transform(x_pred)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+y_pred = 0
+
+#KFold
+for fold, (train_idx, valid_idx) in enumerate(skf.split(x_train1, y_train1)) :
+    print(f"=====Fold {fold}=====")
+
+    x_train, x_val = x_train1[train_idx], x_train1[valid_idx]
+    y_train, y_val = y_train1[train_idx], y_train1[valid_idx]
+    # print(x_train.shape, x_val.shape)  # (90000, 20) (10000, 20)
+    # print(y_train.shape, y_val.shape)  # (90000,) (10000,)
+
+    scaler = StandardScaler()
+    scaler.fit(x_train)
+    x_train = scaler.transform(x_train)
     x_val = scaler.transform(x_val)
+    x_pred = scaler.transform(x_pred)
 
-    # 2. 모델구성
+    model = LogisticRegression(solver = 'liblinear')
+    model.fit(x_train, y_train)
 
-    model = Sequential()
-    model.add(Dense(2048, activation='swish' ,input_dim= 6))
-    model.add(Dropout(0.2))
-    #model.add(Dense(256,activation='relu'))
-    #model.add(Dropout(0.2))
-    model.add(Dense(64,activation='swish'))
-    model.add(Dense(16,activation='swish'))
-    model.add(Dense(1, activation='sigmoid')) 
+    
+    y_val_pred = model.predict(x_val)
+    acc_score = accuracy_score(y_val, y_val_pred)
+    print(f"===== ACCURACY SCORE {acc_score:.6f} =====")    # 0.778700
 
-    # 3. 컴파일 훈련
-
-    modelpath = '../data/modelcheckpoint/titanic_1_'+str(num)+'.hdf5'
-
-    es= EarlyStopping(monitor='val_loss', patience=20)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=10, factor=0.5, verbose=1)
-    cp =ModelCheckpoint(filepath=modelpath, save_best_only=True)
-
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(x_train1, y_train1, epochs=1000, batch_size=32, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
-
-    # 4. 평가, 예측
-
-    loss, mae = model.evaluate(x_test1, y_test1, batch_size=32)
-    y_predict = model.predict(x_pred)
-
-    rmse_list.append(mae)
-    loss_list.append(loss)
-
-    num += 1
+    y_pred += model.predict(x_pred)
 
 
-print("k-fold 확인")
-print("mae : ",rmse_list)
-print("loss : ",loss_list)
+y_pred /= N_SPLITS
+y_pred.shape
+
+
+submission = pd.read_csv('../data/titanic/sample_submission.csv')
+
+submission['Survived'] = np.round(y_pred).astype(int)
+
+submission.to_csv('../data/titanic/sample_008.csv',index=False)

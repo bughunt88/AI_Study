@@ -90,6 +90,7 @@ for train_index, test_index in kfold.split(x_train):
     x_train1 = scaler.transform(x_train1)
     x_test1 = scaler.transform(x_test1)
     x_pred = scaler.transform(x_pred)
+    x_val = scaler.transform(x_val)
 
     # 2. 모델구성
 
