@@ -34,12 +34,22 @@ df = pd.DataFrame(dataset, columns=column_name)
 
 db.connect.commit()
 
-df = pd.get_dummies(df, columns=["category", "dong"])
 
-print(df.head())
+  
+df.iloc[:,-1] = df.iloc[:,-1].astype('int32')
+df['category'] = df['category'].astype('int32')
+df['dong'] = df['dong'].astype('int32')
+
+from category_encoders import HelmertEncoder 
+  
+he = HelmertEncoder(cols=['dong','category'])
+dong = he.fit_transform(df['dong'])
+category = he.fit_transform(df['category'])
 
 
+print(newc)
 
+'''
 # train, test 나누기
 
 train_value = df[ '2020-09-01' > df['date'] ]
@@ -47,12 +57,16 @@ train_value = df[ '2020-09-01' > df['date'] ]
 x_train = train_value.iloc[:,1:-1].astype('int64').to_numpy()
 y_train = train_value.iloc[:,-1].astype('int64').to_numpy()
 
+newc = he.fit_transform(train_value.iloc[:,3].astype('int64'))
+
+print(newc)
+
+x_test = train_value.iloc[:,3].astype('int64').to_numpy()
+
 test_value = df[df['date'] >=  '2020-09-01']
 
 x_pred = test_value.iloc[:,1:-1].astype('int64').to_numpy()
 y_pred = test_value.iloc[:,-1].astype('int64').to_numpy()
 
 
-print(x_train.shape)
-
-
+'''
