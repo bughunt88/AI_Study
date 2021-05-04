@@ -22,6 +22,7 @@ WHEN  DATE LIKE '%-05-%' THEN '5' WHEN  DATE LIKE '%-06-%' THEN '6' WHEN  DATE L
 DAYOFWEEK (DATE)AS DAY, a.time, s.index AS category, d.index AS dong, a.value FROM `business_location_data` AS a INNER JOIN `category_table` AS s ON a.category = s.category INNER JOIN `location_table` AS d ON a.dong = d.location WHERE si = '서울특별시'"
 '''
 
+# 0 있다
 query = "select * from main_data_table ORDER BY DATE, YEAR, MONTH ,TIME, category ASC "
 
 
