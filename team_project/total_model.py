@@ -130,9 +130,9 @@ print(x_pred.shape, y_pred.shape)
 
 leaky_relu = tf.nn.leaky_relu
 acti_list = [leaky_relu, mish, 'swish', 'elu', 'relu', 'selu','tanh']
-opti_list = [RMSprop, Nadam, Adam, Adadelta, Adamax, Adagrad, SGD]
+opti_list = [SGD]
 batch = 200
-lrr = 0.01
+lrr = 0.1
 epo = 50
 for op_idx,opti in enumerate(opti_list):
     for ac_idx,acti in enumerate(acti_list):
@@ -147,7 +147,7 @@ for op_idx,opti in enumerate(opti_list):
             model = build_model(acti, opti, lrr)
 
             # 훈련
-            modelpath = f'../data/modelcheckpoint/15_models_compare_{op_idx}_{ac_idx}_fold' + str(num) + '.hdf5'
+            modelpath = f'../data/modelcheckpoint/15_models_compare_6_{ac_idx}_fold' + str(num) + '.hdf5'
             er,mo,lr = callbacks(modelpath) 
             history = model.fit(x_train1, y_train1, verbose=1, batch_size=batch, epochs = epo, validation_data=(x_val,y_val), callbacks = [er, lr, mo])
             # history_list.append(history)
