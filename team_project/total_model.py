@@ -132,7 +132,7 @@ leaky_relu = tf.nn.leaky_relu
 acti_list = [leaky_relu, mish, 'swish', 'elu', 'relu', 'selu','tanh']
 opti_list = [SGD]
 batch = 200
-lrr = 0.1
+lrr = 0.0000001
 epo = 50
 for op_idx,opti in enumerate(opti_list):
     for ac_idx,acti in enumerate(acti_list):
