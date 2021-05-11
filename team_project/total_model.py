@@ -36,7 +36,6 @@ def callbacks(modelpath):
 
 def build_model(acti, opti, lr):   
 
-    # 2. 모델구성
     inputs = Input(shape = (x_train.shape[1]),name = 'input')
     x = Dense(1024,activation=acti)(inputs)
     x = Dropout(0.2)(x)
@@ -47,7 +46,6 @@ def build_model(acti, opti, lr):
     outputs = Dense(1)(x)
     model = Model(inputs=inputs,outputs=outputs)
 
-    # 3. 컴파일 훈련        
     model.compile(loss='mse', optimizer = opti(learning_rate=lr), metrics='mae')
 
     return model
@@ -128,14 +126,24 @@ x_pred = x_pred.reshape(x_pred.shape[0], x_pred.shape[1],1)
 print(x_train.shape, y_train.shape) 
 print(x_pred.shape, y_pred.shape)   
 
-leaky_relu = tf.nn.leaky_relu
-acti_list = [leaky_relu, mish, 'swish', 'elu', 'relu', 'selu','tanh']
-opti_list = [SGD]
+
 batch = 200
-lrr = 0.0000001
+lrr = 0.01
 epo = 50
+
+leaky_relu = tf.nn.leaky_relu
+
+
+acti_list = [leaky_relu, mish, 'swish', 'elu', 'relu', 'selu','tanh']
+opti_list = [RMSprop, Nadam, Adam, Adadelta, Adamax, Adagrad, SGD]
+
 for op_idx,opti in enumerate(opti_list):
     for ac_idx,acti in enumerate(acti_list):
+        
+        model = build_model(acti, opti, lrr)
+
+
+
         num = 0 
         for train_index, test_index in kfold.split(x_train):             
 
@@ -147,7 +155,7 @@ for op_idx,opti in enumerate(opti_list):
             model = build_model(acti, opti, lrr)
 
             # 훈련
-            modelpath = f'../data/modelcheckpoint/15_models_compare_6_{ac_idx}_fold' + str(num) + '.hdf5'
+            modelpath = f'../data/modelcheckpoint/15_models_compare_{op_idx}_{ac_idx}_fold' + str(num) + '.hdf5'
             er,mo,lr = callbacks(modelpath) 
             history = model.fit(x_train1, y_train1, verbose=1, batch_size=batch, epochs = epo, validation_data=(x_val,y_val), callbacks = [er, lr, mo])
             # history_list.append(history)

@@ -1,51 +1,63 @@
 import numpy as np
+import db_connect as db
 import pandas as pd
+import timeit
+import tensorflow as tf
 
-import numpy as np
-import pandas as pd
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Input, LSTM, Conv2D, Flatten
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from sklearn.model_selection import train_test_split, KFold
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.applications import VGG16, MobileNet, ResNet101, EfficientNetB5, EfficientNetB7
 
-import matplotlib.pyplot as plt
-import matplotlib
+# db 직접 불러오기 
 
-# 자료불러오기
-df = pd.read_csv('C:\order_project\시간-지역별 배달 주문건수_20201031000000.csv',thousands = ',', index_col=0, header=None)
-print(df.head())
+# 0 있다
+query = "select * from main_data_table ORDER BY DATE, YEAR, MONTH ,TIME, category ASC "
 
-is_seoul = df[2] == '서울특별시'
-Seoul = df[is_seoul]
-print(Seoul.head())
-# Seoul.to_csv('C:/order_project/seoul_data.csv',index=True)
+db.cur.execute(query)
+dataset = np.array(db.cur.fetchall())
 
-# # 날짜별
-# Seoul = Seoul.drop(Seoul.columns[[0,1,2,3]], axis='columns')
-# print(Seoul.head())
-# date_sum = Seoul.groupby(0).sum()
-# print(date_sum.head())
+# pandas 넣기
 
-# # 시간별
-# date_sum = Seoul.groupby(1).sum()
-# print(date_sum.head())
+column_name = ['date', 'year', 'month', 'day', 'time', 'category', 'dong', 'value']
 
-# 월별
-Seoul = Seoul.drop(Seoul.columns[[0,1,2,3]], axis='columns')
-print(Seoul.head())
-# Seoul['2019-08-01':'2019-08-31']
-date_sum = []
-for m in range(1,13):
-    a = Seoul['2019-'+"%02d"%m+'-01':'2019-'+"%02d"%m+'-30'].sum()
-    a.index=[m]
-    date_sum.append(a[:])
+df = pd.DataFrame(dataset, columns=column_name)
 
-col_name = ['colname1', 'colname2']
-list1 = date_sum
-list_df = pd.DataFrame(list1, columns=col_name)
-print(list1)
-print(list_df)
+db.connect.commit()
+
+print(df.shape)
 
 
-import matplotlib.pyplot as plt
-import matplotlib
+# 원 핫으로 컬럼 추가해주는 코드!!!!!
+df = pd.get_dummies(df, columns=["category", "dong"])
+# 카테고리랑 동만 원핫으로 해준다 
 
-plt.figure()
-ax = date_sum.plot.line()
-plt.show()
+
+
+# train, test 나누기
+
+train_value = df[ '2020-09-01' > df['date'] ]
+
+x_train = train_value.iloc[:,1:-1].astype('int64').to_numpy()
+y_train = train_value.iloc[:,-1].astype('int64').to_numpy()
+
+test_value = df[df['date'] >=  '2020-09-01']
+
+x_pred = test_value.iloc[:,1:-1].astype('int64').to_numpy()
+y_pred = test_value.iloc[:,-1].astype('int64').to_numpy()
+
+x_pred = x_pred.reshape(x_pred.shape[0], x_pred.shape[1],1,1)
+# y_pred = y_pred.reshape(y_pred.shape[0], y_pred.shape[1],1)
+
+
+
+
+print(df.shape)
+
+
+
+
+

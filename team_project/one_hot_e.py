@@ -47,7 +47,7 @@ dong = he.fit_transform(df['dong'])
 category = he.fit_transform(df['category'])
 
 
-print(newc)
+print(df)
 
 '''
 # train, test 나누기

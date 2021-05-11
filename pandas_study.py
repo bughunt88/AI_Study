@@ -13,6 +13,11 @@ tmp2 = df.copy()
 tmp3 = df.copy()
 
 
+try:
+    print(0)
+except print(0):
+    pass
+
 
 # 판다스 삭제
 
