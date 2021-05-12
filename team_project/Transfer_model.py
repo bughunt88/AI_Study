@@ -64,61 +64,36 @@ x_train, x_val, y_train, y_val = train_test_split(x_train, y_train,  train_size=
 # x_train = x_train.reshape(38833, 38, 28, 3)
 print(x_train.shape, x_val.shape, x_pred.shape) # (3124915, 42) (347213, 42) (177408, 42)
 
-
 x_train = x_train.reshape(x_train.shape[0], 42,1,1)
+x_val = x_val.reshape(x_val.shape[0], 42,1,1)
+x_pred = x_pred.reshape(x_pred.shape[0], 42,1,1)
 
-# inputs = Input(shape=(x_train.shape[1],1,1),name='input')
-# a = Conv2D(3, kernel_size=(1,1))(inputs)
-# a = UpSampling2D(size=(1,42))(a)
+
 resnet = ResNet50(include_top=False, input_shape=(42,42,3))
 inputs = Input(shape=(x_train.shape[1],1,1),name='input')
-a = Conv2D(3, kernel_size=(1,1))(inputs)
-a = UpSampling2D(size=(1,42))(a)
-x = resnet(a)
-x = Flatten()(x)
-x = Dense(16, activation='swish')(x)
+a = Conv2D(3, kernel_size=(1,1))(inputs) # (None, 42, 1, 3)  
+a = UpSampling2D(size=(1,42))(a) # 이걸로 모양 맞추기 # (None, 42, 42, 3) 
+x = resnet(a) # (None, 2, 2, 2048)
+x = Flatten()(x) # (None, 8192)
+x = Dense(512, activation='relu')(x) # (None, 8)
+# 히든 레이어를 최대한 많이 출력해보자
 outputs = Dense(1)(x)
 
 model = Model(inputs=inputs, outputs=outputs)
 model.summary()
 
 
-'''
-mobile = EfficientNetB2(include_top=False,weights='imagenet', input_shape=(42,42,3), classifier_activation='relu')
-# 2. 모델구성
-leaky_relu = tf.nn.leaky_relu
-inputs = Input(shape=(x_train.shape[1],1,1),name='input')
-a = Conv2D(3, kernel_size=(1,1))(inputs)
-a = UpSampling2D(size=(1,42))(a)
- # include_top=False , true ????????, input_shape=(42,42,3)
-# mobile = MobileNet(include_top=False,weights='imagenet',input_shape=x_train.shape[1:])
-# mobile.trainable = True
-# a = mobile.output
-a = mobile(a)
-a = GlobalAveragePooling2D(a)
-a = Dense(1024, activation= 'swish')(a)
-a = Dropout(0.3)(a)
-a = Dense(1, activation= 'swish')(a)
-model = Model(inputs = inputs, outputs = a)
-'''
 # # 3. 컴파일 훈련
-# modelpath = '../data/h5/regressor_LSTM.hdf5'
-# # es= EarlyStopping(monitor='val_loss', patience=10)
-# reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
-
-# model.compile(loss='mse', optimizer='adam', metrics='mae')
-# model.fit(x_train, y_train, epochs=20, batch_size=64, validation_data=(x_val,y_val), callbacks=[reduce_lr] )
-
 es= EarlyStopping(monitor='val_loss', patience=10)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
 # cp = ModelCheckpoint(filepath=modelpath, monitor='val_loss', save_best_only=True, mode='auto')
-cp = ModelCheckpoint('../data/h5/vgg16__dense_1.hdf5', monitor='val_loss', save_best_only=True, verbose=1,mode='auto')
+cp = ModelCheckpoint('../data/h5/resnet_dense_1.hdf5', monitor='val_loss', save_best_only=True, verbose=1,mode='auto')
 model.compile(loss='mse', optimizer='adam', metrics='mae')
-model.fit(x_train, y_train, epochs=50, batch_size=48, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
+model.fit(x_train, y_train, epochs=10, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
 
 # 4. 평가, 예측
 
-loss, mae = model.evaluate(x_pred, y_pred, batch_size=48)
+loss, mae = model.evaluate(x_pred, y_pred, batch_size=64)
 y_predict = model.predict(x_pred)
 
 # RMSE 
