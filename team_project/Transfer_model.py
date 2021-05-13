@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split, KFold
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.applications import EfficientNetB4, EfficientNetB2, EfficientNetB7, VGG16, MobileNet, ResNet50
 from tensorflow.keras.layers import GlobalAveragePooling2D, Flatten, BatchNormalization, Dense, Activation, Dropout, UpSampling2D, Conv2D
+from tensorflow.keras.applications.efficientnet import preprocess_input
 
 # db 직접 불러오기 
 
@@ -57,6 +58,9 @@ x_pred = test_value.iloc[:,1:-1].astype('int64').to_numpy()
 y_pred = test_value.iloc[:,-1].astype('int64').to_numpy()
 # x_pred = x_pred.reshape(x_pred.shape[0], 32,32,3) # (2777702, 42) (694426, 42) (177408, 42)
 
+x_train = preprocess_input(x_train) # 
+x_pred = preprocess_input(x_pred)   # 
+
 def RMSE(y_test, y_predict): 
     return np.sqrt(mean_squared_error(y_test, y_predict)) 
 
@@ -68,11 +72,10 @@ x_train = x_train.reshape(x_train.shape[0], 42,1,1)
 x_val = x_val.reshape(x_val.shape[0], 42,1,1)
 x_pred = x_pred.reshape(x_pred.shape[0], 42,1,1)
 
-
 resnet = ResNet50(include_top=False, input_shape=(42,42,3))
 inputs = Input(shape=(x_train.shape[1],1,1),name='input')
 a = Conv2D(3, kernel_size=(1,1))(inputs) # (None, 42, 1, 3)  
-a = UpSampling2D(size=(1,42))(a) # 이걸로 모양 맞추기 # (None, 42, 42, 3) 
+a = UpSampling2D(size=(1,42))(a) # 모양 맞추기 # (None, 42, 42, 3) 
 x = resnet(a) # (None, 2, 2, 2048)
 x = Flatten()(x) # (None, 8192)
 x = Dense(512, activation='relu')(x) # (None, 8)
