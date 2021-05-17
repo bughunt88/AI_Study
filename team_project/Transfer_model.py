@@ -61,13 +61,13 @@ x_train = x_train.reshape(x_train.shape[0], 42,1,1)
 x_val = x_val.reshape(x_val.shape[0], 42,1,1)
 x_pred = x_pred.reshape(x_pred.shape[0], 42,1,1)
 
-resnet = ResNet50(include_top=False, input_shape=(42,42,3), weights='None')
+resnet = ResNet50(include_top=False, input_shape=(42,42,3), weights='imagenet')
 inputs = Input(shape=(x_train.shape[1],1,1),name='input')
 a = Conv2D(3, kernel_size=(1,1))(inputs) # (None, 42, 1, 3)  
 a = UpSampling2D(size=(1,42))(a) # 모양 맞추기 # (None, 42, 42, 3) 
 x = resnet(a) # (None, 2, 2, 2048)
 x = Flatten()(x) # (None, 8192)
-x = Dense(512, activation='relu')(x) # (None, 8)
+x = Dense(32, activation='relu')(x) # (None, 8)
 # 히든 레이어를 최대한 많이 출력해보자
 outputs = Dense(1)(x)
 
@@ -81,7 +81,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbos
 # cp = ModelCheckpoint(filepath=modelpath, monitor='val_loss', save_best_only=True, mode='auto')
 cp = ModelCheckpoint('../data/h5/resnet_dense_1.hdf5', monitor='val_loss', save_best_only=True, verbose=1,mode='auto')
 model.compile(loss='mse', optimizer='adam', metrics='mae')
-model.fit(x_train, y_train, epochs=5, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
+model.fit(x_train, y_train, epochs=1, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
 
 # 4. 평가, 예측
 
@@ -94,3 +94,21 @@ print("RMSE : ", RMSE(y_pred, y_predict))
 # R2 만드는 법
 r2 = r2_score(y_pred, y_predict)
 print("R2 : ", r2)
+
+# 엑셀 추가 코드 
+# 경로 변경 필요!!!!
+
+df = pd.DataFrame(y_predict)
+df['test'] = y_pred
+df.to_csv('../data/team_project/resnet_dense.csv',index=False)
+
+import matplotlib.pyplot as plt
+ 
+fig = plt.figure( figsize = (12, 4))
+chart = fig.add_subplot(1,1,1)
+chart.plot(y_pred, marker='o', color='blue', label='실제값')
+chart.plot(y_predict, marker='^', color='red', label='예측값')
+plt.legend(loc = 'best') 
+plt.show()
+
+

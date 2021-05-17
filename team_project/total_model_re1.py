@@ -167,3 +167,14 @@ print("r2           rmse          mae            mse: ")
 fold_score_list = np.array(fold_score_list).reshape(len(opti_list),len(acti_list),4)
 print(fold_score_list)
 
+'''
+optimizer :  <class 'tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop'> 
+ activation :  tanh
+ batch_size :  500
+ lr :  0.001
+ epochs :  5000
+r2   :  0.858529394567721
+rmse :  1.459906920570742
+mae :  0.3961494602692392
+mse :  2.131328216730347
+'''

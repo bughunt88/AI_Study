@@ -142,8 +142,6 @@ for op_idx,opti in enumerate(opti_list):
         
         model = build_model(acti, opti, lrr)
 
-
-
         num = 0 
         for train_index, test_index in kfold.split(x_train):             
 
