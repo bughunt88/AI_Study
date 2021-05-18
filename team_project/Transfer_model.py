@@ -15,8 +15,6 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 
 # db 직접 불러오기 
 
-
-
 # 0 있다
 query = "SELECT * FROM main_data_table WHERE (TIME != 2 AND TIME != 3 AND TIME != 4 AND TIME != 5  AND TIME != 6 AND TIME != 7 AND TIME != 8) ORDER BY DATE, YEAR, MONTH ,TIME, category ASC  "
 query1 = "select * from main_data_table ORDER BY DATE, YEAR, MONTH ,TIME, category ASC"
@@ -74,14 +72,13 @@ outputs = Dense(1)(x)
 model = Model(inputs=inputs, outputs=outputs)
 model.summary()
 
-
 # # 3. 컴파일 훈련
 es= EarlyStopping(monitor='val_loss', patience=10)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.5, verbose=1)
 # cp = ModelCheckpoint(filepath=modelpath, monitor='val_loss', save_best_only=True, mode='auto')
 cp = ModelCheckpoint('../data/h5/resnet_dense_1.hdf5', monitor='val_loss', save_best_only=True, verbose=1,mode='auto')
 model.compile(loss='mse', optimizer='adam', metrics='mae')
-model.fit(x_train, y_train, epochs=1, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
+model.fit(x_train, y_train, epochs=10, batch_size=64, validation_data=(x_val,y_val), callbacks=[es,reduce_lr,cp] )
 
 # 4. 평가, 예측
 
@@ -110,5 +107,4 @@ chart.plot(y_pred, marker='o', color='blue', label='실제값')
 chart.plot(y_predict, marker='^', color='red', label='예측값')
 plt.legend(loc = 'best') 
 plt.show()
-
 
