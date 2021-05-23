@@ -4,6 +4,7 @@ import pandas as pd
 import timeit
 import tensorflow as tf
 import numpy as np
+import os
 
 from tensorflow.keras.layers import Conv1D, MaxPooling1D, Dense, Flatten, Dropout,LSTM, Conv2D,Input,Activation, LSTM, Dropout, BatchNormalization
 from tensorflow.keras.models import Sequential, Model, load_model
@@ -141,8 +142,16 @@ for op_idx,opti in enumerate(opti_list):
 
         # 훈련
         er,mo,lr = callbacks(modelpath) 
-        history = model.fit(x_train, y_train, verbose=1, batch_size=batch, epochs = epo, validation_data=(x_val,y_val), callbacks = [er, lr, mo])
+        #history = model.fit(x_train, y_train, verbose=1, batch_size=batch, epochs = epo, validation_data=(x_val,y_val), callbacks = [er, lr, mo])
         # history_list.append(history)
+
+        hdf5_file = f'../data/modelcheckpoint/15_models_covid_{op_idx}_{ac_idx}.hdf5'
+        if os.path.exists(hdf5_file):
+            # 기존에 학습된 모델 불러들이기
+            model = load_model(hdf5_file)
+        else:
+            # 학습한 모델이 없으면 파일로 저장
+            history =  model.fit(x_train, y_train, epochs=epo, batch_size=batch, callbacks=[er, lr], validation_data=(x_val, y_val))
 
         score, y_predict = evaluate_list(model)
         # 엑셀 추가 코드 
