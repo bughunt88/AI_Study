@@ -71,8 +71,6 @@ prediction = Dense(1000, activation='softmax')(x)
 model = Model(inputs=md.input, outputs=prediction)
 
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 cp = ModelCheckpoint('../data/lpd_competition/lotte_0317_32.h5',monitor='val_acc',save_best_only=True, verbose=1)
 early_stopping = EarlyStopping(monitor='val_acc',patience= 8,verbose=1)
 lr = ReduceLROnPlateau(monitor='val_loss',patience= 4, factor=0.4,verbose=1)

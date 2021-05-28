@@ -166,7 +166,6 @@ print('=========================final score========================')
 print("r2           rmse          mae            mse: ")
 fold_score_list = np.array(fold_score_list).reshape(len(opti_list),len(acti_list),4)
 print(fold_score_list)
-
 '''
 optimizer :  <class 'tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop'> 
  activation :  tanh
