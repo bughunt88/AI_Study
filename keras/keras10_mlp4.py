@@ -92,8 +92,11 @@ print('mae : ', mae )
 
 print("RMSE : ", RMSE(y_test, y_predict))
 # print("mse : ", mean_squared_error(y_test, y_predict))
-print("mse : ", mean_squared_error(y_predict, y_test))
 
+print("#############")
+print("mse : ", mean_squared_error(y_predict, y_test, squared=True))
+print("RMSE : ", mean_squared_error(y_predict, y_test, squared=False))
+print("#############")
 
 
 # R2 만드는 법
