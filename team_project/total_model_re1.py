@@ -39,16 +39,13 @@ def build_model(acti, opti, lr):
 
     # 2. 모델구성
     
-    inputs = Input(shape=(x_train.shape[1]),name='input')
-
-    x = Dense(32,activation="relu")(inputs)
-    x = BatchNormalization()(x)
-    x = Dense(32,activation="relu")(x)
-    x = Dense(32,activation="relu")(x)
-    x = Dense(32,activation="relu")(x)
-    x = Dense(16,activation="relu")(x)
-    x = Dense(16,activation="relu")(x)
-
+    inputs = Input(shape = (x_train.shape[1]),name = 'input')
+    x = Dense(1024,activation=acti)(inputs)
+    x = Dropout(0.2)(x)
+    x = Dense(256,activation=acti)(x)
+    x = Dropout(0.2)(x)
+    x = Dense(64, activation=acti)(x)
+    x = Dense(16, activation=acti)(x)
     outputs = Dense(1)(x)
     model = Model(inputs=inputs,outputs=outputs)
 
